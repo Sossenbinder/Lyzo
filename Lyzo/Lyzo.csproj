@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+		<UserSecretsId>a52993c4-88db-4329-ab0c-078f67437707</UserSecretsId>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.13" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Autofac" Version="6.2.0" />
+		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
+		<PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.1.8" />
+		<PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="wwwroot\dist\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Common\Lyzo.Common.Eventing\Lyzo.Common.Eventing.csproj" />
+		<ProjectReference Include="..\Common\Lyzo.Common.Logging\Lyzo.Common.Logging.csproj" />
+		<ProjectReference Include="..\Common\Lyzo.Common.SignalR\Lyzo.Common.SignalR.csproj" />
+	</ItemGroup>
+</Project>

@@ -1,0 +1,21 @@
+﻿<!doctype html>
+<html style="height: 100%;width: 100%">
+
+<head>
+	<meta charset=utf-8>
+	<title>Lyzo</title>
+	<link href="/dist/site.css" rel="stylesheet">
+	<link href="/css/material/materialIcons.css" rel="stylesheet">
+</head>
+
+<body style="height: 100%; width: 100%; margin: 0">
+
+	@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "__AjaxAntiForgeryToken" }))
+	{
+		@Html.AntiForgeryToken()
+	}
+	<div id="reactRoot" style="height: 100%; width: 100%">
+	</div>
+	<script type="text/javascript" src="/dist/site.js"></script>
+</body>
+</html>

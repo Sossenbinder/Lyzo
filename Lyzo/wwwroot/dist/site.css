@@ -1,0 +1,177 @@
+.flex {
+  display: flex;
+}
+.flexColumn {
+  flex-direction: column;
+}
+.flexColumnReverse {
+  flex-direction: column-reverse;
+}
+.flexRow {
+  flex-direction: row;
+}
+.flexRowReverse {
+  flex-direction: row-reverse;
+}
+.flexNoWrap {
+  flex-wrap: nowrap;
+}
+.flexWrap {
+  flex-wrap: wrap;
+}
+.flexWrapReverse {
+  flex-wrap: wrap-reverse;
+}
+.flexMainCenter {
+  justify-content: center;
+}
+.flexMainStart {
+  justify-content: flex-start;
+}
+.flexMainEnd {
+  justify-content: flex-end;
+}
+.flexMainCenterSelf {
+  justify-self: center;
+}
+.flexMainStartSelf {
+  justify-self: flex-start;
+}
+.flexMainEndSelf {
+  justify-self: flex-end;
+}
+.flexAround {
+  justify-content: space-around;
+}
+.flexBetween {
+  justify-content: space-between;
+}
+.flexCrossCenter {
+  align-items: center;
+}
+.flexCrossStart {
+  align-items: flex-start;
+}
+.flexCrossEnd {
+  align-items: flex-end;
+}
+.flexCrossCenterSelf {
+  align-self: center;
+}
+.flexCrossStartSelf {
+  align-self: flex-start;
+}
+.flexCrossEndSelf {
+  align-self: flex-end;
+}
+
+.flex {
+  display: flex;
+}
+.flexColumn {
+  flex-direction: column;
+}
+.flexColumnReverse {
+  flex-direction: column-reverse;
+}
+.flexRow {
+  flex-direction: row;
+}
+.flexRowReverse {
+  flex-direction: row-reverse;
+}
+.flexNoWrap {
+  flex-wrap: nowrap;
+}
+.flexWrap {
+  flex-wrap: wrap;
+}
+.flexWrapReverse {
+  flex-wrap: wrap-reverse;
+}
+.flexMainCenter {
+  justify-content: center;
+}
+.flexMainStart {
+  justify-content: flex-start;
+}
+.flexMainEnd {
+  justify-content: flex-end;
+}
+.flexMainCenterSelf {
+  justify-self: center;
+}
+.flexMainStartSelf {
+  justify-self: flex-start;
+}
+.flexMainEndSelf {
+  justify-self: flex-end;
+}
+.flexAround {
+  justify-content: space-around;
+}
+.flexBetween {
+  justify-content: space-between;
+}
+.flexCrossCenter {
+  align-items: center;
+}
+.flexCrossStart {
+  align-items: flex-start;
+}
+.flexCrossEnd {
+  align-items: flex-end;
+}
+.flexCrossCenterSelf {
+  align-self: center;
+}
+.flexCrossStartSelf {
+  align-self: flex-start;
+}
+.flexCrossEndSelf {
+  align-self: flex-end;
+}
+
+.LoadingBar {
+  display: grid;
+  place-items: center;
+  height: 100%;
+}
+.LoadingBar .Bar {
+  position: relative;
+  width: 50vw;
+  height: 5vh;
+  border: 1px solid #666262;
+  border-radius: 15px;
+}
+.LoadingBar .Bar .ProgressLabel {
+  height: 100%;
+}
+
+.Main {
+  height: 100%;
+  width: 100%;
+  font-family: "Telefon Black, Sans-Serif";
+}
+.Main .Content {
+  width: 80%;
+}
+.Main .MainGrid {
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+}
+.Main .MainGrid .SideSection {
+  height: 100%;
+  max-height: 100%;
+  background: #615d5d;
+}
+.Main .MainGrid .MainSection {
+  height: 100%;
+  max-height: 100%;
+  padding: 0 10px 0 10px;
+  background: #f5f5f5;
+}
+
+
+/*# sourceMappingURL=/dist/site.css.map */

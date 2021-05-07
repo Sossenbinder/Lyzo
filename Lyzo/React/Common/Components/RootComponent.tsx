@@ -6,15 +6,13 @@ import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 
 // Components
-import Main from "views/Main/Main";
 import LoadingBar from "common/Components/State/LoadingBar";
-
-import MyContextProvider from "./MyContextProvider";
+import Main from "views/Main/Main";
+import ServiceContextProvider from "common/Modules/Service/ServiceContextProvider";
+import ServiceUpdateEvent from "common/Modules/Service/ServiceUpdateEvent";
 
 // Functionality
 import { store } from "common/Redux/store";
-import { ServiceContextProvider } from "common/Modules/Service/ServiceContextProvider";
-import ServiceUpdateEvent from "common/Modules/Service/ServiceUpdateEvent";
 
 // Styles
 import "./Styles/RootComponent.less";
@@ -53,14 +51,15 @@ const RootComponent: React.FC<Props> = ({ initFunc, initServiceCount }) => {
 			<BrowserRouter>
 				<QueryClientProvider client={queryClient}>
 					<ServiceContextProvider>
-						<MyContextProvider>
-							<Main />
-							{/* {loadedServices === initServiceCount && initialized ?
-							<Main />
-							:
-							<LoadingBar
-								progress={(loadedServices / initServiceCount) * 100} />} */}
-						</MyContextProvider>
+						<Choose>
+							<When condition={loadedServices === initServiceCount && initialized}>
+								<Main />
+							</When>
+							<Otherwise>
+								<LoadingBar
+									progress={(loadedServices / initServiceCount) * 100} />
+							</Otherwise>
+						</Choose>
 					</ServiceContextProvider>
 				</QueryClientProvider>
 			</BrowserRouter>

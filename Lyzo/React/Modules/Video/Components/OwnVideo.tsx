@@ -2,6 +2,7 @@
 import * as React from "react";
 
 // Functionality
+import useServices from "common/Hooks/useServices";
 
 // Types
 
@@ -13,8 +14,9 @@ type Props = {
 }
 
 export const OwnVideo: React.FC<Props> = () => {
-
 	const videoRef = React.useRef<HTMLVideoElement>(null);
+
+	const { WebRTCService } = useServices();
 
 	const [mediaStream, setMediaStream] = React.useState<MediaStream>();
 
@@ -26,7 +28,6 @@ export const OwnVideo: React.FC<Props> = () => {
 			})
 
 			setMediaStream(stream);
-			console.log(mediaStream);
 
 			videoRef.current.srcObject = stream;
 		} catch (e) {

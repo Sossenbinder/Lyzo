@@ -5,7 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 
 // Components
-import Flex from "common/components/Flex";
+import Flex from "common/Components/Flex";
 
 // Functionality
 import useUserSettings from "common/Hooks/useUserSettings";

@@ -24,11 +24,7 @@ export const ServiceContextProvider: React.FC = ({ children }) => {
 		return () => ServiceUpdateEvent.Unregister(listenerId);
 	}, []);
 
-	return (
-		<ServiceContext.Provider value={serviceState}>
-			{ children}
-		</ServiceContext.Provider>
-	);
+	return <ServiceContext.Provider value={serviceState}>{children}</ServiceContext.Provider>;
 }
 
-export default ServiceContext;
+export default ServiceContextProvider;

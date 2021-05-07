@@ -7,11 +7,8 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "build": "parcel build React/index.tsx --out-dir wwwroot/dist/ --public-url /dist/ --out-file site.js site.css",
-    "watch": "parcel watch React/index.tsx --out-dir wwwroot/dist/ --public-url /dist/ --out-file site.js site.css",
-    "build-dev": "webpack --mode development",
-    "build-prod": "webpack --mode production",
-    "webpackWatch": "webpack --watch --mode development",
+    "build": "webpack --mode development",
+    "watch": "webpack --watch --mode development",
     "test": "cross-env TS_NODE_PROJECT=\"tsconfig.testing.json\" ts-mocha --paths -r jsdom-global/register React/Tests/**/*.test.ts"
   },
   "alias": {
@@ -38,7 +35,6 @@
     "less-loader": "^8.1.1",
     "mocha": "^8.3.2",
     "mocha-jsdom": "^2.0.0",
-    "parcel-bundler": "^1.12.5",
     "style-loader": "^2.0.0",
     "ts-loader": "^9.1.1",
     "ts-transformer-keys": "^0.4.3",

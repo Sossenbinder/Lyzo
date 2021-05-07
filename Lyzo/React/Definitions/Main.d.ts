@@ -11,3 +11,10 @@ declare namespace JSX {
 		children?: TChildren | TChildren[];
 	}
 }
+
+declare function Choose(): any;
+declare function When(props: { condition: boolean; }): any;
+declare function Otherwise(): any;
+declare function If(props: { condition: boolean; }): any;
+declare function For<T>(props: { each: string; of: Iterable<T>; index?: string; }): any;
+declare function With(props: { [id: string]: any; }): any;

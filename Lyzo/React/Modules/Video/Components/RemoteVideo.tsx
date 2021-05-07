@@ -2,7 +2,7 @@
 import * as React from "react";
 
 // Functionality
-import { useServices } from "common/Hooks/useServices";
+import useServices from "common/Hooks/useServices";
 
 // Styles
 import "./Styles/RemoteVideo.less";
@@ -14,11 +14,13 @@ type Props = {
 export const RemoteVideo: React.FC<Props> = () => {
 
 	const videoRef = React.useRef<HTMLVideoElement>(null);
+
 	const { WebRTCService } = useServices();
 
 	const [mediaStream, setMediaStream] = React.useState<MediaStream>();
 
 	React.useEffect(() => {
+
 		if (!WebRTCService) {
 			return;
 		}

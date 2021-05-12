@@ -1,26 +1,48 @@
 // Framework
 import * as React from "react";
+import { connect } from "react-redux";
 
 // Components
 import Flex from "common/Components/Flex";
-import OwnVideo from "modules/Video/Components/OwnVideo";
-import RemoteVideo from "modules/Video/Components/RemoteVideo";
-import LoadingBar from "common/Components/State/LoadingBar";
+import RoomOverview from "modules/Rooms/Components/RoomOverview"
+import VideoRoom from "modules/Rooms/Components/VideoRoom/VideoRoom";
+
+// Types
+import { ChatRoom } from "modules/Rooms/types";
+import { ReduxStore } from "common/Redux/store";
 
 import "./Styles/Main.less";
 
-export const Main: React.FC = () => {
+type Props = {
+	chatRooms: Array<ChatRoom>;
+}
+
+export const Main: React.FC<Props> = ({ chatRooms }) => {
+
+	const joinedRoom = chatRooms.find(x => x.joined);
+
 	return (
 		<Flex
 			className="Main"
 			direction="Column">
-			Hello World
-			<OwnVideo />
-			<RemoteVideo />
-			<LoadingBar
-				progress={50} />
+			<Choose>
+				<When condition={!!joinedRoom}>
+					<VideoRoom
+						room={joinedRoom} />
+				</When>
+				<Otherwise>
+					<RoomOverview
+						rooms={chatRooms} />
+				</Otherwise>
+			</Choose>
 		</Flex>
 	);
 }
 
-export default Main;
+const mapStateToProps = (state: ReduxStore): Props => {
+	return {
+		chatRooms: state.roomReducer.data,
+	}
+}
+
+export default connect(mapStateToProps)(Main);

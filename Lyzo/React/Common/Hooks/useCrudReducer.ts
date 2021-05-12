@@ -5,6 +5,7 @@ import { ReducerAction } from "react-redux";
 
 // Functionality
 import { createReducer, MultiReducerParams } from "common/Redux/Reducer/CrudReducer";
+import { ensureArray } from "common/Helper/arrayUtils";
 
 // Types
 import { CouldBeArray } from "common/Types/arrayTypes";
@@ -16,7 +17,7 @@ export const useCrudReducer = <TDataType>(
 	const crudReducer = createReducer<TDataType>(options);
 
 	const [state, dispatch] = useReducer(crudReducer.reducer, {
-		data: initialState
+		data: ensureArray(initialState),
 	});
 
 	const dispatchActionGenerator = (action: (data: CouldBeArray<TDataType>) => ReducerAction<CouldBeArray<TDataType>>) => (data: CouldBeArray<TDataType>) => {

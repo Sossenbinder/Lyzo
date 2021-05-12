@@ -10,15 +10,13 @@ import useServices from "common/Hooks/useServices";
 import "./Styles/OwnVideo.less";
 
 type Props = {
-
+	roomId: string;
 }
 
-export const OwnVideo: React.FC<Props> = () => {
+export const OwnVideo: React.FC<Props> = ({ roomId }) => {
 	const videoRef = React.useRef<HTMLVideoElement>(null);
 
 	const { WebRTCService } = useServices();
-
-	const [mediaStream, setMediaStream] = React.useState<MediaStream>();
 
 	const initializeUserMedia = async () => {
 		try {
@@ -27,9 +25,8 @@ export const OwnVideo: React.FC<Props> = () => {
 				video: true,
 			})
 
-			setMediaStream(stream);
-
 			videoRef.current.srcObject = stream;
+			await WebRTCService.initializeStreamForRoom(roomId, stream);
 		} catch (e) {
 			window.alert("Getting media device failed");
 		}

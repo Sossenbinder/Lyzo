@@ -1,0 +1,25 @@
+FROM mcr.microsoft.com/dotnet/sdk:5.0
+ARG BUILD_CONFIGURATION=Debug
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV ASPNETCORE_URLS=http://+:80
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+EXPOSE 80
+
+WORKDIR /src
+COPY ["Common/Lyzo.Common.Core/Lyzo.Common.Core.csproj", "Common/Lyzo.Common.Core/"]
+COPY ["Common/Lyzo.Common.DI/Lyzo.Common.DI.csproj", "Common/Lyzo.Common.DI/"]
+COPY ["Common/Lyzo.Common.Eventing/Lyzo.Common.Eventing.csproj", "Common/Lyzo.Common.Eventing/"]
+COPY ["Common/Lyzo.Common.Logging/Lyzo.Common.Logging.csproj", "Common/Lyzo.Common.Logging/"]
+COPY ["Common/Lyzo.Common.SignalR/Lyzo.Common.SignalR.csproj", "Common/Lyzo.Common.SignalR/"]
+COPY ["Lyzo/Lyzo.csproj", "Lyzo/"]
+COPY ["Module/Lyzo.Module.Notifications/Lyzo.Module.Notifications.csproj", "Module/Lyzo.Module.Notifications/"]
+COPY ["Module/Lyzo.Module.Voice/Lyzo.Module.Voice.csproj", "Module/Lyzo.Module.Voice/"]
+
+RUN dotnet restore "Lyzo/Lyzo.csproj"
+COPY . .
+WORKDIR "/src/Lyzo"
+RUN dotnet build --no-restore "Lyzo.csproj" -c $BUILD_CONFIGURATION
+
+RUN echo "exec dotnet run --no-build --no-launch-profile -c $BUILD_CONFIGURATION --" > /entrypoint.sh
+
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]

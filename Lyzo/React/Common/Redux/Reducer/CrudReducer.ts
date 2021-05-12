@@ -117,7 +117,7 @@ type GenericReducerParams<TDataType, TReducerState extends ReducerState<TDataTyp
 
 const createReducerInternal = <TDataType, TReducerState extends ReducerState<TDataType>>(
 	params: GenericReducerParams<TDataType, TReducerState>
-): Reducer<TDataType> => {
+): Reducer<TDataType, TReducerState> => {
 
 	const { actionIdentifier, externalActions } = params;
 

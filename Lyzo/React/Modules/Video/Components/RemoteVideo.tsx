@@ -17,22 +17,13 @@ export const RemoteVideo: React.FC<Props> = () => {
 
 	const { WebRTCService } = useServices();
 
-	const [mediaStream, setMediaStream] = React.useState<MediaStream>();
-
 	React.useEffect(() => {
+		// const rtcConnection: RTCPeerConnection = WebRTCService.rtcConnection;
 
-		if (!WebRTCService) {
-			return;
-		}
-
-		const rtcConnection: RTCPeerConnection = WebRTCService.rtcConnection;
-
-		// @ts-ignore
-		rtcConnection.ontrack((event: RTCTrackEvent) => {
-			setMediaStream(event.streams[0]);
-			console.log(mediaStream);
-		})
-	}, [WebRTCService]);
+		// rtcConnection.ontrack = (event: RTCTrackEvent) => {
+		// 	videoRef.current.srcObject = event.streams[0];
+		// };
+	}, [videoRef]);
 
 	return (
 		<div style={{ border: "1px solid black" }}>

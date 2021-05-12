@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Autofac;
 using Lyzo.Common.Eventing.DI;
@@ -19,6 +20,7 @@ using MassTransit;
 using Microsoft.AspNetCore.DataProtection;
 using Serilog;
 using Lyzo.Common.SignalR;
+using Lyzo.Module.Rooms.DI;
 
 namespace Lyzo
 {
@@ -39,7 +41,9 @@ namespace Lyzo
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddControllersWithViews();
+			services
+				.AddControllersWithViews()
+				.AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 
 			services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(LogProvider.CreateLogger(Configuration)));
 
@@ -65,6 +69,7 @@ namespace Lyzo
 		public void ConfigureContainer(ContainerBuilder builder)
 		{
 			builder.RegisterModule<MassTransitModule>();
+			builder.RegisterModule<RoomsModule>();
 
 			builder.Register(context =>
 				{

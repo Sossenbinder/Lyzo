@@ -9,6 +9,11 @@ export type ChatRoom = {
 	joined: boolean;
 }
 
+export type ConnectedParticipant = {
+	connectionId: string;
+	offer: string;
+}
+
 export namespace Network {
 	export namespace CreateRoom {
 		export type Request = ChatRoom;
@@ -18,6 +23,14 @@ export namespace Network {
 		}
 	}
 
+	export namespace GetConnectedClients {
+		export type Request = {
+			roomId: string;
+		}
+
+		export type Response = Array<ConnectedParticipant>;
+	}
+
 	export namespace GetRooms {
 		export type Request = Array<ChatRoom>;
 	}
@@ -25,4 +38,5 @@ export namespace Network {
 
 export const RoomNotifications = {
 	joined: "joined",
+	newParticipant: "newParticipant",
 }

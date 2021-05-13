@@ -20,6 +20,7 @@ using MassTransit;
 using Microsoft.AspNetCore.DataProtection;
 using Serilog;
 using Lyzo.Common.SignalR;
+using Lyzo.Common.SignalR.DI;
 using Lyzo.Module.Rooms.DI;
 
 namespace Lyzo
@@ -70,6 +71,7 @@ namespace Lyzo
 		{
 			builder.RegisterModule<MassTransitModule>();
 			builder.RegisterModule<RoomsModule>();
+			builder.RegisterModule<SignalRModule>();
 
 			builder.Register(context =>
 				{

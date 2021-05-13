@@ -24,7 +24,12 @@ export const VideoRoom: React.FC<Props> = ({ room }) => {
 			{room.name}
 			<OwnVideo
 				roomId={room.id} />
-			<RemoteVideo />
+			{
+				room.participants.map(x =>
+					<RemoteVideo
+						participant={x}
+						key={x.id} />)
+			}
 		</>
 	);
 }

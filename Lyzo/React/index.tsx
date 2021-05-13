@@ -46,7 +46,7 @@ const initCoreServices = async (signalRProvider: ISignalRConnectionProvider) => 
 	const webRtcService = new WebRTCService(signalRProvider);
 	initPromises.push(initService("WebRTCService", webRtcService));
 
-	const roomService = new RoomService(signalRProvider);
+	const roomService = new RoomService(signalRProvider, webRtcService);
 	initPromises.push(initService("RoomService", roomService));
 
 	await Promise.all(initPromises);

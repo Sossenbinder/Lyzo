@@ -8,14 +8,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Lyzo.Controllers
 {
+	public record GetConnectedClientsRequest(string RoomId);
+
 	[Route("[controller]")]
 	public class RoomController : ControllerBase
 	{
 		private readonly IRoomManagementService _roomManagementService;
 
-		public RoomController(IRoomManagementService roomManagementService)
+		private readonly IRoomParticipantService _roomParticipantService;
+
+		public RoomController(
+			IRoomManagementService roomManagementService,
+			IRoomParticipantService roomParticipantService)
 		{
 			_roomManagementService = roomManagementService;
+			_roomParticipantService = roomParticipantService;
 		}
 
 		[HttpGet]
@@ -25,6 +32,15 @@ namespace Lyzo.Controllers
 			var rooms = await _roomManagementService.GetRooms();
 
 			return JsonDataResponse<List<Room>>.Success(rooms);
+		}
+
+		[HttpPost]
+		[Route("GetConnectedClients")]
+		public JsonDataResponse<List<RoomParticipant>> GetConnectedClients([FromBody] GetConnectedClientsRequest request)
+		{
+			var participants = _roomParticipantService.GetConnectedClients(request.RoomId);
+
+			return JsonDataResponse<List<RoomParticipant>>.Success(participants);
 		}
 
 		[HttpPost]

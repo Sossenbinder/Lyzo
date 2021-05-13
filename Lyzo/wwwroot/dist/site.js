@@ -43015,6 +43015,40 @@ exports.range = range;
 
 /***/ }),
 
+/***/ "./React/common/Helper/asyncUtils.ts":
+/*!*******************************************!*\
+  !*** ./React/common/Helper/asyncUtils.ts ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.asyncForEachParallel = exports.delay = void 0;
+const arrayUtils_1 = __webpack_require__(/*! ./arrayUtils */ "./React/common/Helper/arrayUtils.ts");
+const delay = async (seconds) => {
+    let resolver;
+    const promise = new Promise(res => resolver = res);
+    window.setTimeout(() => resolver(null), seconds);
+    return promise;
+};
+exports.delay = delay;
+const asyncForEachParallel = async (source, action, parallelismDegree = 25) => {
+    const asyncExecutors = arrayUtils_1.range(parallelismDegree)
+        .map(() => parallelExecutor(source, action));
+    await Promise.all(asyncExecutors);
+};
+exports.asyncForEachParallel = asyncForEachParallel;
+const parallelExecutor = async (source, action) => {
+    while (source.length > 0) {
+        const workItem = source.shift();
+        await action(workItem);
+    }
+};
+
+
+/***/ }),
+
 /***/ "./React/common/Hooks/useAsyncCall.ts":
 /*!********************************************!*\
   !*** ./React/common/Hooks/useAsyncCall.ts ***!
@@ -43328,18 +43362,26 @@ exports.default = exports.store;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createRoom = exports.getRooms = void 0;
+exports.createRoom = exports.getConnectedClients = exports.getRooms = void 0;
 const PostRequest_1 = __webpack_require__(/*! common/Helper/Requests/PostRequest */ "./React/common/Helper/Requests/PostRequest.ts");
 const GetRequest_1 = __webpack_require__(/*! common/Helper/Requests/GetRequest */ "./React/common/Helper/Requests/GetRequest.ts");
 const Urls = {
     CreateRoom: "/Room/CreateRoom",
     GetRooms: "/Room/GetRooms",
+    GetConnectedClients: "Room/GetConnectedClients"
 };
 const getRooms = async () => {
     const request = new GetRequest_1.default(Urls.GetRooms);
     return await request.get();
 };
 exports.getRooms = getRooms;
+const getConnectedClients = async (roomId) => {
+    const request = new PostRequest_1.default(Urls.GetConnectedClients);
+    return await request.post({
+        roomId,
+    });
+};
+exports.getConnectedClients = getConnectedClients;
 const createRoom = async (chatRoom) => {
     const request = new PostRequest_1.default(Urls.CreateRoom);
     return await request.post(chatRoom);
@@ -43516,7 +43558,7 @@ const VideoRoom = ({ room }) => {
     return (React.createElement(React.Fragment, null,
         room.name,
         React.createElement(OwnVideo_1.default, { roomId: room.id }),
-        React.createElement(RemoteVideo_1.default, null)));
+        room.participants.map(x => React.createElement(RemoteVideo_1.default, { participant: x, key: x.id }))));
 };
 exports.VideoRoom = VideoRoom;
 exports.default = exports.VideoRoom;
@@ -43558,9 +43600,9 @@ const roomCommunication = __webpack_require__(/*! modules/Rooms/Communication/Ro
 const RoomReducer_1 = __webpack_require__(/*! modules/Rooms/Reducer/RoomReducer */ "./React/modules/Rooms/Reducer/RoomReducer.ts");
 const types_1 = __webpack_require__(/*! modules/Rooms/types */ "./React/modules/Rooms/types.ts");
 class RoomService extends ModuleService_1.default {
-    constructor(signalRConnectionProvider) {
+    constructor(signalRConnectionProvider, webRtcService) {
         super();
-        this.onJoined = (roomId) => {
+        this.onJoined = async (roomId) => {
             const state = this.getStore().roomReducer.data;
             const room = state.find(x => x.id === roomId);
             if (room) {
@@ -43571,8 +43613,27 @@ class RoomService extends ModuleService_1.default {
                 this.dispatch(RoomReducer_1.reducer.update(newRoom));
             }
         };
+        this.onNewParticipant = async (roomId, connectionId) => {
+            const state = this.getStore().roomReducer.data;
+            const room = state.find(x => x.id === roomId);
+            if (room) {
+                const participants = [...(room.participants ?? [])];
+                const connection = this._webRtcService.createConnection();
+                await connection.setLocalDescription();
+                participants.push({
+                    connection,
+                    id: connectionId,
+                });
+                this.dispatch(RoomReducer_1.reducer.update({
+                    ...room,
+                    participants,
+                }));
+            }
+        };
+        this._webRtcService = webRtcService;
         this._hubConnection = signalRConnectionProvider.SignalRConnection;
         this._hubConnection.on(types_1.RoomNotifications.joined, this.onJoined);
+        this._hubConnection.on(types_1.RoomNotifications.newParticipant, this.onNewParticipant);
     }
     start() {
         return Promise.resolve();
@@ -43585,6 +43646,11 @@ class RoomService extends ModuleService_1.default {
     }
     async getRooms() {
         const getRoomsResponse = await roomCommunication.getRooms();
+        let rooms = [];
+        if (getRoomsResponse.success) {
+            rooms = getRoomsResponse.payload;
+            rooms.forEach(room => room.participants = []);
+        }
         this.dispatch(RoomReducer_1.reducer.replace(getRoomsResponse.success ? getRoomsResponse.payload : []));
     }
     async joinRoom(roomId) {
@@ -43608,6 +43674,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RoomNotifications = void 0;
 exports.RoomNotifications = {
     joined: "joined",
+    newParticipant: "newParticipant",
 };
 
 
@@ -43665,14 +43732,19 @@ exports.default = exports.OwnVideo;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RemoteVideo = void 0;
 const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-const useServices_1 = __webpack_require__(/*! common/Hooks/useServices */ "./React/common/Hooks/useServices.ts");
 __webpack_require__(/*! ./Styles/RemoteVideo.less */ "./React/modules/Video/Components/Styles/RemoteVideo.less");
-const RemoteVideo = () => {
+const RemoteVideo = ({ participant }) => {
     const videoRef = React.useRef(null);
-    const { WebRTCService } = useServices_1.default();
     React.useEffect(() => {
-    }, [videoRef]);
+        if (!participant.connection) {
+            return;
+        }
+        participant.connection.ontrack = (event) => {
+            videoRef.current.srcObject = event.streams[0];
+        };
+    }, [videoRef, participant.connection]);
     return (React.createElement("div", { style: { border: "1px solid black" } },
+        "Remote Video",
         React.createElement("video", { id: "RemoteVideo", playsInline: true, autoPlay: true, ref: videoRef })));
 };
 exports.RemoteVideo = RemoteVideo;
@@ -43691,7 +43763,10 @@ exports.default = exports.RemoteVideo;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const ModuleService_1 = __webpack_require__(/*! common/Modules/Service/ModuleService */ "./React/common/Modules/Service/ModuleService.ts");
+const RoomCommunication_1 = __webpack_require__(/*! modules/Rooms/Communication/RoomCommunication */ "./React/modules/Rooms/Communication/RoomCommunication.ts");
+const RoomReducer_1 = __webpack_require__(/*! modules/Rooms/Reducer/RoomReducer */ "./React/modules/Rooms/Reducer/RoomReducer.ts");
 const types_1 = __webpack_require__(/*! modules/Video/types */ "./React/modules/Video/types.ts");
+const asyncUtils_1 = __webpack_require__(/*! common/Helper/asyncUtils */ "./React/common/Helper/asyncUtils.ts");
 class WebRTCService extends ModuleService_1.default {
     constructor(signalRConnectionProvider) {
         super();
@@ -43700,21 +43775,26 @@ class WebRTCService extends ModuleService_1.default {
                     'urls': 'stun:stun.l.google.com:19302'
                 }]
         };
-        this.onRemoteOffer = async (roomId, offeringConnectionId, offer) => {
+        this.handleRemoteOffer = async (roomId, offeringConnectionId, offer) => {
             const room = this.getStore().roomReducer.data.find(x => x.id === roomId);
             const connection = new RTCPeerConnection(this._configuration);
             const remoteDescription = JSON.parse(offer);
             await connection.setRemoteDescription(remoteDescription);
-            const answer = await connection.createAnswer();
-            await connection.setLocalDescription(answer);
-            await this._ownConnection.setRemoteDescription(answer);
+            const localAnswer = await connection.createAnswer();
+            await connection.setLocalDescription(localAnswer);
+            await this._ownConnection.setRemoteDescription(localAnswer);
             const participant = {
                 connection,
                 id: offeringConnectionId,
             };
-            room.participants = [...room.participants, participant];
-            await this._signalRConnection.send(types_1.VideoNotifications.respondToRemoteOffer, roomId, offeringConnectionId, JSON.stringify(answer));
+            const newRoom = {
+                ...room,
+                participants: [...(room.participants ?? []), participant]
+            };
+            this.dispatch(RoomReducer_1.reducer.update(newRoom));
+            await this._signalRConnection.send(types_1.VideoNotifications.respondToRemoteOffer, roomId, offeringConnectionId, JSON.stringify(localAnswer));
         };
+        this.createConnection = () => new RTCPeerConnection(this._configuration);
         this.onOfferRespondedTo = async (roomId, respondingId, answer) => {
             const room = this.getStore().roomReducer.data.find(x => x.id === roomId);
             const participant = room.participants.find(x => x.id === respondingId);
@@ -43723,7 +43803,7 @@ class WebRTCService extends ModuleService_1.default {
             }
         };
         this._signalRConnection = signalRConnectionProvider.SignalRConnection;
-        this._signalRConnection.on(types_1.VideoNotifications.remoteOffer, this.onRemoteOffer);
+        this._signalRConnection.on(types_1.VideoNotifications.remoteOffer, this.handleRemoteOffer);
         this._signalRConnection.on(types_1.VideoNotifications.offerRespondedTo, this.onOfferRespondedTo);
     }
     get rtcConnection() {
@@ -43737,6 +43817,10 @@ class WebRTCService extends ModuleService_1.default {
         stream.getTracks().forEach(track => ownStream.addTrack(track));
         const offer = await ownStream.createOffer();
         await ownStream.setLocalDescription(offer);
+        const connectedParticipants = await RoomCommunication_1.getConnectedClients(roomId);
+        await asyncUtils_1.asyncForEachParallel(connectedParticipants.payload.filter(x => !!x.offer), async (x) => {
+            await this.handleRemoteOffer(roomId, x.connectionId, x.offer);
+        });
         await this._signalRConnection.send(types_1.VideoNotifications.offerRtc, roomId, JSON.stringify(offer));
     }
 }
@@ -94748,7 +94832,7 @@ const initCoreServices = async (signalRProvider) => {
     })());
     const webRtcService = new WebRTCService_1.default(signalRProvider);
     initPromises.push(initService("WebRTCService", webRtcService));
-    const roomService = new RoomService_1.default(signalRProvider);
+    const roomService = new RoomService_1.default(signalRProvider, webRtcService);
     initPromises.push(initService("RoomService", roomService));
     await Promise.all(initPromises);
 };

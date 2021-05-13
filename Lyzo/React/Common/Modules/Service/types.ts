@@ -13,6 +13,8 @@ export type ServiceNotification = {
 export interface IWebRTCService extends IModuleService {
 	readonly rtcConnection: RTCPeerConnection;
 	initializeStreamForRoom(roomId: string, stream: MediaStream): Promise<void>;
+	handleRemoteOffer(roomId: string, offeringConnectionId: string, offer: string): Promise<void>;
+	createConnection(): RTCPeerConnection;
 }
 
 export interface IRoomService extends IModuleService {

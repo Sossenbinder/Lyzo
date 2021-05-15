@@ -14,6 +14,7 @@ namespace Lyzo.Common.SignalR
 		OfferRespondedTo,
 		NewParticipant,
 		Disconnected,
+		IceCandidateReceived,
 	}
 
 	public partial class SignalRHub : BaseHub
@@ -38,9 +39,9 @@ namespace Lyzo.Common.SignalR
 			await RoomEvents.ParticipantJoined.Raise(new ParticipantJoined(roomId, ConnectionId));
 		}
 
-		public async Task OfferRtc(string roomId, string offer)
+		public async Task OfferRtc(string roomId, string receiver, string offer)
 		{
-			await Clients.GroupExcept(roomId, ConnectionId).SendAsync(Commands.RemoteOffer.ToString().ToLower(), roomId, ConnectionId, offer);
+			await Clients.Client(receiver).SendAsync(Commands.RemoteOffer.ToString().ToLower(), roomId, ConnectionId, offer);
 		}
 
 		public async Task RespondToRemoteOffer(string roomId, string originalOfferer, string responseOffer)
@@ -51,6 +52,11 @@ namespace Lyzo.Common.SignalR
 		public async Task Disconnect(string roomId)
 		{
 			await Clients.GroupExcept(roomId, ConnectionId).SendAsync(Commands.Disconnected.ToString().ToLower(), ConnectionId);
+		}
+
+		public async Task ShareCandidate(string roomId, string receiver, string candidate)
+		{
+			await Clients.Client(receiver).SendAsync(Commands.IceCandidateReceived.ToString().ToLower(), roomId, ConnectionId, candidate);
 		}
 	}
 }

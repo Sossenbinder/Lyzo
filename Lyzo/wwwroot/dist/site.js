@@ -43115,9 +43115,9 @@ const useSignalR = () => {
     const { SignalRConnectionProvider } = useServices_1.default();
     const connection = SignalRConnectionProvider.SignalRConnection;
     return {
-        send: connection.send,
-        register: connection.on,
-        unregister: connection.off,
+        send: connection.send.bind(connection),
+        register: connection.on.bind(connection),
+        unregister: connection.off.bind(connection),
     };
 };
 exports.useSignalR = useSignalR;
@@ -43619,7 +43619,7 @@ class RoomService extends ModuleService_1.default {
             if (room) {
                 const participants = [...(room.participants ?? [])];
                 participants.push({
-                    connection: undefined,
+                    connection: this._webRtcService.createConnection(),
                     id: connectionId,
                 });
                 this.dispatch(RoomReducer_1.reducer.update({
@@ -43701,7 +43701,8 @@ const OwnVideo = ({ roomId }) => {
                 video: true,
             });
             videoRef.current.srcObject = stream;
-            await WebRTCService.initializeStreamForRoom(roomId, stream);
+            WebRTCService.setLocalStreamInfo(stream);
+            await WebRTCService.initializeStreamForRoom(roomId);
         }
         catch (e) {
             window.alert("Getting media device failed");
@@ -43730,22 +43731,27 @@ exports.default = exports.OwnVideo;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RemoteVideo = void 0;
 const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-const useServices_1 = __webpack_require__(/*! common/Hooks/useServices */ "./React/common/Hooks/useServices.ts");
 __webpack_require__(/*! ./Styles/RemoteVideo.less */ "./React/modules/Video/Components/Styles/RemoteVideo.less");
 const RemoteVideo = ({ participant }) => {
     const videoRef = React.useRef(null);
-    const { WebRTCService } = useServices_1.default();
+    const [connected, setConnected] = React.useState(false);
+    const play = async () => {
+        setConnected(true);
+    };
     React.useEffect(() => {
-        const connection = WebRTCService.createConnection();
-        if (!participant.connection) {
-            return;
+        if (participant.connection) {
+            participant.connection.ontrack = event => {
+                if (event.streams.length === 0) {
+                    return;
+                }
+                videoRef.current.srcObject = event.streams[0];
+                play();
+            };
         }
-        participant.connection.ontrack = (event) => {
-            videoRef.current.srcObject = event.streams[0];
-        };
-    }, [videoRef, participant.connection]);
+    }, [participant.connection]);
     return (React.createElement("div", { style: { border: "1px solid black" } },
         "Remote Video",
+        (!connected) ? "Connecting..." : null,
         React.createElement("video", { id: "RemoteVideo", playsInline: true, autoPlay: true, ref: videoRef })));
 };
 exports.RemoteVideo = RemoteVideo;
@@ -43778,29 +43784,18 @@ class WebRTCService extends ModuleService_1.default {
         };
         this.handleRemoteOffer = async (roomId, offeringConnectionId, offer) => {
             const room = this.getStore().roomReducer.data.find(x => x.id === roomId);
-            const remoteConnection = new RTCPeerConnection(this._configuration);
-            remoteConnection.ontrack = (e) => {
-                debugger;
-                console.log(e);
-            };
-            this._ownConnection.onicecandidate = (event) => {
-                remoteConnection.addIceCandidate(event.candidate);
-            };
-            remoteConnection.onicecandidate = (event) => {
-                this._ownConnection.addIceCandidate(event.candidate);
+            const participant = room.participants.find(x => x.id === offeringConnectionId);
+            const remoteConnection = participant.connection;
+            remoteConnection.onicecandidate = async (event) => {
+                if (!event.candidate) {
+                    return;
+                }
+                await this._signalRConnection.send(types_1.VideoNotifications.shareCandidate, roomId, offeringConnectionId, JSON.stringify(event.candidate));
             };
             const remoteDescription = JSON.parse(offer);
             await remoteConnection.setRemoteDescription(remoteDescription);
             const localAnswer = await remoteConnection.createAnswer();
             await remoteConnection.setLocalDescription(localAnswer);
-            await this._ownConnection.setRemoteDescription(localAnswer);
-            const participant = room.participants.find(x => x.id === offeringConnectionId);
-            participant.connection = remoteConnection;
-            const newRoom = {
-                ...room,
-                participants: [...room.participants]
-            };
-            this.dispatch(RoomReducer_1.reducer.update(newRoom));
             await this._signalRConnection.send(types_1.VideoNotifications.respondToRemoteOffer, roomId, offeringConnectionId, JSON.stringify(localAnswer));
         };
         this.createConnection = () => new RTCPeerConnection(this._configuration);
@@ -43811,26 +43806,61 @@ class WebRTCService extends ModuleService_1.default {
                 await participant.connection.setRemoteDescription(JSON.parse(answer));
             }
         };
+        this.onIceCandidateReceived = async (roomId, connectionId, candidate) => {
+            const room = this.getStore().roomReducer.data.find(x => x.id === roomId);
+            const participant = room.participants.find(x => x.id === connectionId);
+            if (participant && participant.connection) {
+                await participant.connection.addIceCandidate(JSON.parse(candidate));
+            }
+        };
         this._signalRConnection = signalRConnectionProvider.SignalRConnection;
-        this._signalRConnection.on(types_1.VideoNotifications.remoteOffer, this.handleRemoteOffer);
         this._signalRConnection.on(types_1.VideoNotifications.offerRespondedTo, this.onOfferRespondedTo);
-    }
-    get rtcConnection() {
-        return this._ownConnection;
+        this._signalRConnection.on(types_1.VideoNotifications.remoteOffer, this.handleRemoteOffer);
+        this._signalRConnection.on(types_1.VideoNotifications.iceCandidateReceived, this.onIceCandidateReceived);
     }
     start() {
         return Promise.resolve();
     }
-    async initializeStreamForRoom(roomId, stream) {
-        const ownStream = this._ownConnection = new RTCPeerConnection(this._configuration);
-        stream.getTracks().forEach(track => ownStream.addTrack(track));
-        const offer = await ownStream.createOffer();
-        await ownStream.setLocalDescription(offer);
+    setLocalStreamInfo(mediaStream) {
+        this._mediaStream = mediaStream;
+    }
+    async initializeStreamForRoom(roomId) {
         const connectedParticipants = await RoomCommunication_1.getConnectedClients(roomId);
-        await asyncUtils_1.asyncForEachParallel(connectedParticipants.payload.filter(x => !!x.offer), async (x) => {
-            await this.handleRemoteOffer(roomId, x.connectionId, x.offer);
+        if (connectedParticipants.payload.length === 0) {
+            return;
+        }
+        const connectionMap = new Map(connectedParticipants.payload.map(participant => {
+            return [participant.connectionId, this.createConnection()];
+        }));
+        const rooms = this.getStore().roomReducer.data;
+        const newRoom = { ...rooms.find(x => x.id === roomId) };
+        const newParticipantSet = connectedParticipants.payload.map(x => ({
+            connection: connectionMap.get(x.connectionId),
+            id: x.connectionId,
+        }));
+        connectionMap.forEach((val, key) => {
+            newParticipantSet.find(x => x.id === key).connection = val;
         });
-        await this._signalRConnection.send(types_1.VideoNotifications.offerRtc, roomId, JSON.stringify(offer));
+        newRoom.participants = newParticipantSet;
+        this.dispatch(RoomReducer_1.reducer.update(newRoom));
+        await asyncUtils_1.asyncForEachParallel(Array.from(connectionMap), async ([key, value]) => {
+            this._mediaStream.getTracks().forEach(x => value.addTrack(x, this._mediaStream));
+            const offer = await value.createOffer();
+            await value.setLocalDescription(offer);
+            value.oniceconnectionstatechange = function () {
+                console.log('ICE state: ', value.iceConnectionState);
+            };
+            value.onicecandidate = async (event) => {
+                if (!event.candidate) {
+                    return;
+                }
+                await this._signalRConnection.send(types_1.VideoNotifications.shareCandidate, roomId, key, JSON.stringify(event));
+            };
+            value.ontrack = event => {
+                console.log(event);
+            };
+            await this._signalRConnection.send(types_1.VideoNotifications.offerRtc, roomId, key, JSON.stringify(offer));
+        });
     }
 }
 exports.default = WebRTCService;
@@ -43855,6 +43885,8 @@ exports.VideoNotifications = {
     remoteOffer: "remoteOffer",
     respondToRemoteOffer: "respondToRemoteOffer",
     offerRespondedTo: "offerRespondedTo",
+    shareCandidate: "shareCandidate",
+    iceCandidateReceived: "iceCandidateReceived",
 };
 
 

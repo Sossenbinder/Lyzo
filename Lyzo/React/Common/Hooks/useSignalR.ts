@@ -13,9 +13,9 @@ export const useSignalR = (): Info => {
 	const connection = SignalRConnectionProvider.SignalRConnection;
 
 	return {
-		send: connection.send,
-		register: connection.on,
-		unregister: connection.off,
+		send: connection.send.bind(connection),
+		register: connection.on.bind(connection),
+		unregister: connection.off.bind(connection),
 	}
 };
 

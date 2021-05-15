@@ -2,7 +2,6 @@
 import * as React from "react";
 
 // Components
-import Flex from "common/Components/Flex";
 import OwnVideo from "modules/Video/Components/OwnVideo";
 import RemoteVideo from "modules/Video/Components/RemoteVideo";
 

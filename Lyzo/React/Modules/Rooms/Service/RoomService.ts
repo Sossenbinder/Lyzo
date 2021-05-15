@@ -83,7 +83,7 @@ export default class RoomService extends ModuleService implements IRoomService {
 			const participants = [...(room.participants ?? [])];
 
 			participants.push({
-				connection: undefined,
+				connection: this._webRtcService.createConnection(),
 				id: connectionId,
 			});
 

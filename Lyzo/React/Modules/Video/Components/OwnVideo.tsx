@@ -26,7 +26,11 @@ export const OwnVideo: React.FC<Props> = ({ roomId }) => {
 			})
 
 			videoRef.current.srcObject = stream;
-			await WebRTCService.initializeStreamForRoom(roomId, stream);
+
+			WebRTCService.setLocalStreamInfo(stream);
+
+
+			await WebRTCService.initializeStreamForRoom(roomId);
 		} catch (e) {
 			window.alert("Getting media device failed");
 		}

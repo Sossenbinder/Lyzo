@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Lyzo.Common.SignalR.Service.Interface;
 using Lyzo.Common.Web.DataTypes.Responses;
+using Lyzo.Controllers.Base;
 using Lyzo.Module.Rooms.DataTypes;
 using Lyzo.Module.Rooms.Service.Interface;
 using Microsoft.AspNetCore.Mvc;
@@ -11,18 +14,22 @@ namespace Lyzo.Controllers
 	public record GetConnectedClientsRequest(string RoomId);
 
 	[Route("[controller]")]
-	public class RoomController : ControllerBase
+	public class RoomController : IdentityControllerBase
 	{
 		private readonly IRoomManagementService _roomManagementService;
 
 		private readonly IRoomParticipantService _roomParticipantService;
 
+		private readonly IConnectionMappingService _connectionMappingService;
+
 		public RoomController(
 			IRoomManagementService roomManagementService,
-			IRoomParticipantService roomParticipantService)
+			IRoomParticipantService roomParticipantService,
+			IConnectionMappingService connectionMappingService)
 		{
 			_roomManagementService = roomManagementService;
 			_roomParticipantService = roomParticipantService;
+			_connectionMappingService = connectionMappingService;
 		}
 
 		[HttpGet]
@@ -40,7 +47,9 @@ namespace Lyzo.Controllers
 		{
 			var participants = _roomParticipantService.GetConnectedClients(request.RoomId);
 
-			return JsonDataResponse<List<RoomParticipant>>.Success(participants);
+			var ownId = _connectionMappingService.GetIdForClient(UserId.ToString())!;
+
+			return JsonDataResponse<List<RoomParticipant>>.Success(participants.Where(x => x.ConnectionId != ownId).ToList());
 		}
 
 		[HttpPost]

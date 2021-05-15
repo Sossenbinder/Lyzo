@@ -2,10 +2,11 @@
 import * as React from "react";
 
 // Type
-import { VideoParticipant } from 'modules/Video/types';
+import { VideoNotifications, VideoParticipant } from 'modules/Video/types';
 
 // Functionality
 import useServices from "common/Hooks/useServices";
+import useSignalR from 'common/Hooks/useSignalR';
 
 // Styles
 import "./Styles/RemoteVideo.less";
@@ -18,24 +19,32 @@ export const RemoteVideo: React.FC<Props> = ({ participant }) => {
 
 	const videoRef = React.useRef<HTMLVideoElement>(null);
 
-	const { WebRTCService } = useServices();
+	const [connected, setConnected] = React.useState(false);
+
+	const play = async () => {
+		setConnected(true);
+	}
 
 	React.useEffect(() => {
+		if (participant.connection) {
+			participant.connection.ontrack = event => {
 
-		const connection = WebRTCService.createConnection();
+				if (event.streams.length === 0) {
+					return;
+				}
 
-		if (!participant.connection) {
-			return;
+				videoRef.current.srcObject = event.streams[0];
+				play();
+			}
 		}
-
-		participant.connection.ontrack = (event: RTCTrackEvent) => {
-			videoRef.current.srcObject = event.streams[0];
-		};
-	}, [videoRef, participant.connection]);
+	}, [participant.connection]);
 
 	return (
 		<div style={{ border: "1px solid black" }}>
 			Remote Video
+			<If condition={!connected}>
+				Connecting...
+			</If>
 			<video
 				id="RemoteVideo"
 				playsInline

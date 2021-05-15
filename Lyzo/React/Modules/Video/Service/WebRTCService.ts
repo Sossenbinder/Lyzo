@@ -21,64 +21,101 @@ export default class WebRTCService extends ModuleService implements IWebRTCServi
 		}],
 	};
 
-	private _ownConnection: RTCPeerConnection;
-
 	private _signalRConnection: signalR.HubConnection;
 
-	get rtcConnection(): RTCPeerConnection {
-		return this._ownConnection;
-	}
+	private _mediaStream: MediaStream;
 
 	public constructor(signalRConnectionProvider: ISignalRConnectionProvider) {
 		super();
 
 		this._signalRConnection = signalRConnectionProvider.SignalRConnection;
-		this._signalRConnection.on(VideoNotifications.remoteOffer, this.handleRemoteOffer);
 		this._signalRConnection.on(VideoNotifications.offerRespondedTo, this.onOfferRespondedTo);
+		this._signalRConnection.on(VideoNotifications.remoteOffer, this.handleRemoteOffer);
+		this._signalRConnection.on(VideoNotifications.iceCandidateReceived, this.onIceCandidateReceived);
 	}
 
 	public start() {
 		return Promise.resolve();
 	}
 
+	public setLocalStreamInfo(mediaStream: MediaStream) {
+		this._mediaStream = mediaStream;
+	}
+
 	// Initialize our part for a room
-	public async initializeStreamForRoom(roomId: string, stream: MediaStream) {
+	public async initializeStreamForRoom(roomId: string) {
 
-		// Setup our own outward stream for th e room
-		const ownStream = this._ownConnection = new RTCPeerConnection(this._configuration);
-		stream.getTracks().forEach(track => ownStream.addTrack(track));
-
-		// Create an offer and set our local description
-		const offer = await ownStream.createOffer();
-		await ownStream.setLocalDescription(offer);
-
-		// Initialize the connection for all the available video participants within the room
+		// Create connection to all available participants
 		const connectedParticipants = await getConnectedClients(roomId);
-		await asyncForEachParallel(connectedParticipants.payload.filter(x => !!x.offer), async x => {
-			await this.handleRemoteOffer(roomId, x.connectionId, x.offer);
+
+		if (connectedParticipants.payload.length === 0) {
+			return;
+		}
+
+		const connectionMap = new Map<string, RTCPeerConnection>(connectedParticipants.payload.map(participant => {
+			return [participant.connectionId, this.createConnection()];
+		}));
+
+		// Put the new connection into redux
+		const rooms = this.getStore().roomReducer.data;
+		const newRoom = { ...rooms.find(x => x.id === roomId) };
+		const newParticipantSet: Array<VideoParticipant> = connectedParticipants.payload.map(x => ({
+			connection: connectionMap.get(x.connectionId),
+			id: x.connectionId,
+		}))
+
+		connectionMap.forEach((val, key) => {
+			newParticipantSet.find(x => x.id === key).connection = val;
 		})
 
-		// Signal our offer
-		await this._signalRConnection.send(VideoNotifications.offerRtc, roomId, JSON.stringify(offer));
+		newRoom.participants = newParticipantSet;
+		this.dispatch(roomReducer.update(newRoom));
+
+		// Offer on all connections
+		await asyncForEachParallel(Array.from(connectionMap), async ([key, value]) => {
+
+			this._mediaStream.getTracks().forEach(x => value.addTrack(x, this._mediaStream));
+
+			// Create an offer and set our local description
+			const offer = await value.createOffer();
+			await value.setLocalDescription(offer);
+
+			value.oniceconnectionstatechange = function () {
+				console.log('ICE state: ', value.iceConnectionState);
+			}
+
+			value.onicecandidate = async (event) => {
+
+				if (!event.candidate) {
+					return;
+				}
+
+				await this._signalRConnection.send(VideoNotifications.shareCandidate, roomId, key, JSON.stringify(event));
+			}
+
+			value.ontrack = event => {
+				console.log(event);
+			}
+
+			// Signal our offer
+			await this._signalRConnection.send(VideoNotifications.offerRtc, roomId, key, JSON.stringify(offer));
+		})
 	}
 
 	// Handle an offer coming in from somewhere remote
 	public handleRemoteOffer = async (roomId: string, offeringConnectionId: string, offer: string) => {
 		const room = this.getStore().roomReducer.data.find(x => x.id === roomId);
+		const participant = room.participants.find(x => x.id === offeringConnectionId);
 
-		const remoteConnection = new RTCPeerConnection(this._configuration);
+		const remoteConnection = participant.connection;
 
-		remoteConnection.ontrack = (e) => {
-			debugger;
-			console.log(e);
-		}
+		remoteConnection.onicecandidate = async (event) => {
 
-		this._ownConnection.onicecandidate = (event) => {
-			remoteConnection.addIceCandidate(event.candidate);
-		}
+			if (!event.candidate) {
+				return;
+			}
 
-		remoteConnection.onicecandidate = (event) => {
-			this._ownConnection.addIceCandidate(event.candidate);
+			await this._signalRConnection.send(VideoNotifications.shareCandidate, roomId, offeringConnectionId, JSON.stringify(event.candidate));
 		}
 
 		// Parse the remote offer and set it on our freshly created connection as remote description
@@ -89,19 +126,6 @@ export default class WebRTCService extends ModuleService implements IWebRTCServi
 		const localAnswer = await remoteConnection.createAnswer();
 		await remoteConnection.setLocalDescription(localAnswer);
 
-		await this._ownConnection.setRemoteDescription(localAnswer);
-
-		const participant = room.participants.find(x => x.id === offeringConnectionId);
-
-		participant.connection = remoteConnection;
-
-		const newRoom: ChatRoom = {
-			...room,
-			participants: [...room.participants]
-		}
-
-		this.dispatch(roomReducer.update(newRoom));
-
 		// Signal that we have responded to the offer and include our answer
 		await this._signalRConnection.send(VideoNotifications.respondToRemoteOffer, roomId, offeringConnectionId, JSON.stringify(localAnswer));
 	}
@@ -110,13 +134,22 @@ export default class WebRTCService extends ModuleService implements IWebRTCServi
 
 	// Callback raised by response to an offer
 	private onOfferRespondedTo = async (roomId: string, respondingId: string, answer: string) => {
-
 		// Grab the room for the remote description and set the remote description on it with the answer we now received
 		const room = this.getStore().roomReducer.data.find(x => x.id === roomId);
 		const participant = room.participants.find(x => x.id === respondingId);
 
 		if (participant) {
 			await participant.connection.setRemoteDescription(JSON.parse(answer));
+		}
+	}
+
+	private onIceCandidateReceived = async (roomId: string, connectionId: string, candidate: string) => {
+		// Grab the room for the remote description and set the remote description on it with the answer we now received
+		const room = this.getStore().roomReducer.data.find(x => x.id === roomId);
+		const participant = room.participants.find(x => x.id === connectionId);
+
+		if (participant && participant.connection) {
+			await participant.connection.addIceCandidate(JSON.parse(candidate));
 		}
 	}
 }

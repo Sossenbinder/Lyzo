@@ -5,6 +5,8 @@ export const VideoNotifications = {
 	remoteOffer: "remoteOffer",
 	respondToRemoteOffer: "respondToRemoteOffer",
 	offerRespondedTo: "offerRespondedTo",
+	shareCandidate: "shareCandidate",
+	iceCandidateReceived: "iceCandidateReceived",
 }
 
 export type VideoParticipant = {

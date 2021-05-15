@@ -11,8 +11,8 @@ export type ServiceNotification = {
 }
 
 export interface IWebRTCService extends IModuleService {
-	readonly rtcConnection: RTCPeerConnection;
-	initializeStreamForRoom(roomId: string, stream: MediaStream): Promise<void>;
+	initializeStreamForRoom(roomId: string): Promise<void>;
+	setLocalStreamInfo(mediaStream: MediaStream): void;
 	handleRemoteOffer(roomId: string, offeringConnectionId: string, offer: string): Promise<void>;
 	createConnection(): RTCPeerConnection;
 }

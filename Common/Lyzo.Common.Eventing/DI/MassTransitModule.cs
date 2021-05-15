@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Lyzo.Common.Eventing.MassTransit.Helper;
 using Lyzo.Common.Eventing.MassTransit.Service;
+using Lyzo.Common.Eventing.MassTransit.Service.Interface;
 
 namespace Lyzo.Common.Eventing.DI
 {
@@ -13,7 +14,7 @@ namespace Lyzo.Common.Eventing.DI
 				.SingleInstance();
 
 			builder.RegisterType<MassTransitEventingService>()
-				.As<IStartable>()
+				.As<IStartable, IMassTransitEventingService>()
 				.SingleInstance();
 		}
 	}

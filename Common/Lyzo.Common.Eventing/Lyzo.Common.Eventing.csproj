@@ -14,4 +14,4 @@
 		<ProjectReference Include="..\Lyzo.Common.Core\Lyzo.Common.Core.csproj" />
 		<ProjectReference Include="..\Lyzo.Common.DI\Lyzo.Common.DI.csproj" />
 	</ItemGroup>
-</Project>
+		</Project>

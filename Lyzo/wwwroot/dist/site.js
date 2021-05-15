@@ -43618,10 +43618,8 @@ class RoomService extends ModuleService_1.default {
             const room = state.find(x => x.id === roomId);
             if (room) {
                 const participants = [...(room.participants ?? [])];
-                const connection = this._webRtcService.createConnection();
-                await connection.setLocalDescription();
                 participants.push({
-                    connection,
+                    connection: undefined,
                     id: connectionId,
                 });
                 this.dispatch(RoomReducer_1.reducer.update({
@@ -43732,10 +43730,13 @@ exports.default = exports.OwnVideo;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RemoteVideo = void 0;
 const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+const useServices_1 = __webpack_require__(/*! common/Hooks/useServices */ "./React/common/Hooks/useServices.ts");
 __webpack_require__(/*! ./Styles/RemoteVideo.less */ "./React/modules/Video/Components/Styles/RemoteVideo.less");
 const RemoteVideo = ({ participant }) => {
     const videoRef = React.useRef(null);
+    const { WebRTCService } = useServices_1.default();
     React.useEffect(() => {
+        const connection = WebRTCService.createConnection();
         if (!participant.connection) {
             return;
         }
@@ -43771,25 +43772,33 @@ class WebRTCService extends ModuleService_1.default {
     constructor(signalRConnectionProvider) {
         super();
         this._configuration = {
-            'iceServers': [{
-                    'urls': 'stun:stun.l.google.com:19302'
-                }]
+            iceServers: [{
+                    urls: 'stun:stun.l.google.com:19302'
+                }],
         };
         this.handleRemoteOffer = async (roomId, offeringConnectionId, offer) => {
             const room = this.getStore().roomReducer.data.find(x => x.id === roomId);
-            const connection = new RTCPeerConnection(this._configuration);
-            const remoteDescription = JSON.parse(offer);
-            await connection.setRemoteDescription(remoteDescription);
-            const localAnswer = await connection.createAnswer();
-            await connection.setLocalDescription(localAnswer);
-            await this._ownConnection.setRemoteDescription(localAnswer);
-            const participant = {
-                connection,
-                id: offeringConnectionId,
+            const remoteConnection = new RTCPeerConnection(this._configuration);
+            remoteConnection.ontrack = (e) => {
+                debugger;
+                console.log(e);
             };
+            this._ownConnection.onicecandidate = (event) => {
+                remoteConnection.addIceCandidate(event.candidate);
+            };
+            remoteConnection.onicecandidate = (event) => {
+                this._ownConnection.addIceCandidate(event.candidate);
+            };
+            const remoteDescription = JSON.parse(offer);
+            await remoteConnection.setRemoteDescription(remoteDescription);
+            const localAnswer = await remoteConnection.createAnswer();
+            await remoteConnection.setLocalDescription(localAnswer);
+            await this._ownConnection.setRemoteDescription(localAnswer);
+            const participant = room.participants.find(x => x.id === offeringConnectionId);
+            participant.connection = remoteConnection;
             const newRoom = {
                 ...room,
-                participants: [...(room.participants ?? []), participant]
+                participants: [...room.participants]
             };
             this.dispatch(RoomReducer_1.reducer.update(newRoom));
             await this._signalRConnection.send(types_1.VideoNotifications.respondToRemoteOffer, roomId, offeringConnectionId, JSON.stringify(localAnswer));

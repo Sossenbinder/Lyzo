@@ -5,11 +5,24 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Remove="Di\**" />
+		<EmbeddedResource Remove="Di\**" />
+		<None Remove="Di\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="DI\SignalRModule.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.2.0" />
+		<PackageReference Include="MassTransit" Version="7.1.8" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\Module\Lyzo.Module.Notifications\Lyzo.Module.Notifications.csproj" />
+		<ProjectReference Include="..\..\Module\Lyzo.Module.Rooms\Lyzo.Module.Rooms.csproj" />
 	</ItemGroup>
-</Project>
+		</Project>

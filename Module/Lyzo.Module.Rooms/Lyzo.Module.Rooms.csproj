@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+	</PropertyGroup>
+	<ItemGroup>
+		<Folder Include="DataTypes\Entity\" />
+		<Folder Include="DI\" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Autofac" Version="6.2.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\Common\Lyzo.Common.Database\Lyzo.Common.Database.csproj" />
+		<ProjectReference Include="..\..\Common\Lyzo.Common.Eventing\Lyzo.Common.Eventing.csproj" />
+		<ProjectReference Include="..\Lyzo.Module.ServiceBase\Lyzo.Module.ServiceBase.csproj" />
+	</ItemGroup>
+</Project>

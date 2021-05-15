@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using Lyzo.Common.SignalR.Interface;
+﻿using System.Threading.Tasks;
+using Lyzo.Common.SignalR.Base;
 
 namespace Lyzo.Common.SignalR
 {
-	public class SignalRHub : Hub<ISignalRHub>
+	public partial class SignalRHub : BaseHub
 	{
+		public override Task OnConnectedAsync()
+		{
+			return base.OnConnectedAsync();
+		}
 	}
 }

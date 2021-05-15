@@ -3,23 +3,35 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31129.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyzo", "Lyzo\Lyzo.csproj", "{7EA9AA9D-DCB3-4791-BD44-DA9DF3DF29FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo", "Lyzo\Lyzo.csproj", "{7EA9AA9D-DCB3-4791-BD44-DA9DF3DF29FC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{96CFF769-BD99-4568-99B8-4484A78E2980}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyzo.Common.Core", "Common\Lyzo.Common.Core\Lyzo.Common.Core.csproj", "{FF3DCB36-0C88-4887-8BC3-77D1967E16E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo.Common.Core", "Common\Lyzo.Common.Core\Lyzo.Common.Core.csproj", "{FF3DCB36-0C88-4887-8BC3-77D1967E16E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyzo.Common.Eventing", "Common\Lyzo.Common.Eventing\Lyzo.Common.Eventing.csproj", "{40655A4C-F8FF-4CBB-A994-1DFF18363C60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo.Common.Eventing", "Common\Lyzo.Common.Eventing\Lyzo.Common.Eventing.csproj", "{40655A4C-F8FF-4CBB-A994-1DFF18363C60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyzo.Common.SignalR", "Common\Lyzo.Common.SignalR\Lyzo.Common.SignalR.csproj", "{DBB7D0FB-7291-4A33-A1FC-D49A9CFB6522}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo.Common.SignalR", "Common\Lyzo.Common.SignalR\Lyzo.Common.SignalR.csproj", "{DBB7D0FB-7291-4A33-A1FC-D49A9CFB6522}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyzo.Common.DI", "Common\Lyzo.Common.DI\Lyzo.Common.DI.csproj", "{E228DDCC-16EB-4335-8841-EABCECF2CCB7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo.Common.DI", "Common\Lyzo.Common.DI\Lyzo.Common.DI.csproj", "{E228DDCC-16EB-4335-8841-EABCECF2CCB7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Module", "Module", "{891BE18B-C59C-465A-ADE9-4C78DB7FAEAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyzo.Module.Notifications", "Module\Lyzo.Module.Notifications\Lyzo.Module.Notifications.csproj", "{C1CDD116-7D21-4D9E-AC0F-90EFAE634A29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo.Module.Notifications", "Module\Lyzo.Module.Notifications\Lyzo.Module.Notifications.csproj", "{C1CDD116-7D21-4D9E-AC0F-90EFAE634A29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyzo.Common.Logging", "Common\Lyzo.Common.Logging\Lyzo.Common.Logging.csproj", "{58FDDD76-954F-435B-A516-6327BD0ADB81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo.Common.Logging", "Common\Lyzo.Common.Logging\Lyzo.Common.Logging.csproj", "{58FDDD76-954F-435B-A516-6327BD0ADB81}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo.Module.Voice", "Module\Lyzo.Module.Voice\Lyzo.Module.Voice.csproj", "{E4E2E75C-3723-4B99-AD0E-330916466BDE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo.Common.Web", "Common\Lyzo.Common.Web\Lyzo.Common.Web.csproj", "{5AF6D58B-67CE-4B27-89F9-49E1A33E6EF8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo.Module.Rooms", "Module\Lyzo.Module.Rooms\Lyzo.Module.Rooms.csproj", "{732BD885-D798-424E-B93C-04BCF81C1C59}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{829C45C2-769E-4573-9E2C-BCBA7470A9C6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo.Common.Database", "Common\Lyzo.Common.Database\Lyzo.Common.Database.csproj", "{E7E8FEDA-7AF6-456C-94B5-E828322CCBBB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyzo.Module.ServiceBase", "Module\Lyzo.Module.ServiceBase\Lyzo.Module.ServiceBase.csproj", "{60BBA3D5-61A0-4C62-B8AF-BD654B060218}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +67,30 @@ Global
 		{58FDDD76-954F-435B-A516-6327BD0ADB81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58FDDD76-954F-435B-A516-6327BD0ADB81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58FDDD76-954F-435B-A516-6327BD0ADB81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4E2E75C-3723-4B99-AD0E-330916466BDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4E2E75C-3723-4B99-AD0E-330916466BDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4E2E75C-3723-4B99-AD0E-330916466BDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4E2E75C-3723-4B99-AD0E-330916466BDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AF6D58B-67CE-4B27-89F9-49E1A33E6EF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AF6D58B-67CE-4B27-89F9-49E1A33E6EF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AF6D58B-67CE-4B27-89F9-49E1A33E6EF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AF6D58B-67CE-4B27-89F9-49E1A33E6EF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{732BD885-D798-424E-B93C-04BCF81C1C59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{732BD885-D798-424E-B93C-04BCF81C1C59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{732BD885-D798-424E-B93C-04BCF81C1C59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{732BD885-D798-424E-B93C-04BCF81C1C59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{829C45C2-769E-4573-9E2C-BCBA7470A9C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{829C45C2-769E-4573-9E2C-BCBA7470A9C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{829C45C2-769E-4573-9E2C-BCBA7470A9C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{829C45C2-769E-4573-9E2C-BCBA7470A9C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7E8FEDA-7AF6-456C-94B5-E828322CCBBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7E8FEDA-7AF6-456C-94B5-E828322CCBBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7E8FEDA-7AF6-456C-94B5-E828322CCBBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7E8FEDA-7AF6-456C-94B5-E828322CCBBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60BBA3D5-61A0-4C62-B8AF-BD654B060218}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60BBA3D5-61A0-4C62-B8AF-BD654B060218}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60BBA3D5-61A0-4C62-B8AF-BD654B060218}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60BBA3D5-61A0-4C62-B8AF-BD654B060218}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,6 +102,11 @@ Global
 		{E228DDCC-16EB-4335-8841-EABCECF2CCB7} = {96CFF769-BD99-4568-99B8-4484A78E2980}
 		{C1CDD116-7D21-4D9E-AC0F-90EFAE634A29} = {891BE18B-C59C-465A-ADE9-4C78DB7FAEAB}
 		{58FDDD76-954F-435B-A516-6327BD0ADB81} = {96CFF769-BD99-4568-99B8-4484A78E2980}
+		{E4E2E75C-3723-4B99-AD0E-330916466BDE} = {891BE18B-C59C-465A-ADE9-4C78DB7FAEAB}
+		{5AF6D58B-67CE-4B27-89F9-49E1A33E6EF8} = {96CFF769-BD99-4568-99B8-4484A78E2980}
+		{732BD885-D798-424E-B93C-04BCF81C1C59} = {891BE18B-C59C-465A-ADE9-4C78DB7FAEAB}
+		{E7E8FEDA-7AF6-456C-94B5-E828322CCBBB} = {96CFF769-BD99-4568-99B8-4484A78E2980}
+		{60BBA3D5-61A0-4C62-B8AF-BD654B060218} = {891BE18B-C59C-465A-ADE9-4C78DB7FAEAB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3B2621B2-4A4C-4C06-84EB-5C46D7429FCB}

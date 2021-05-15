@@ -4,6 +4,9 @@ import * as React from "react";
 // Type
 import { VideoParticipant } from 'modules/Video/types';
 
+// Functionality
+import useServices from "common/Hooks/useServices";
+
 // Styles
 import "./Styles/RemoteVideo.less";
 
@@ -15,7 +18,11 @@ export const RemoteVideo: React.FC<Props> = ({ participant }) => {
 
 	const videoRef = React.useRef<HTMLVideoElement>(null);
 
+	const { WebRTCService } = useServices();
+
 	React.useEffect(() => {
+
+		const connection = WebRTCService.createConnection();
 
 		if (!participant.connection) {
 			return;

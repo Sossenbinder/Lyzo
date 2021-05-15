@@ -15,10 +15,10 @@ import { ChatRoom } from 'modules/Rooms/types';
 
 export default class WebRTCService extends ModuleService implements IWebRTCService {
 
-	private readonly _configuration = {
-		'iceServers': [{
-			'urls': 'stun:stun.l.google.com:19302'
-		}]
+	private readonly _configuration: RTCConfiguration = {
+		iceServers: [{
+			urls: 'stun:stun.l.google.com:19302'
+		}],
 	};
 
 	private _ownConnection: RTCPeerConnection;
@@ -66,27 +66,38 @@ export default class WebRTCService extends ModuleService implements IWebRTCServi
 	public handleRemoteOffer = async (roomId: string, offeringConnectionId: string, offer: string) => {
 		const room = this.getStore().roomReducer.data.find(x => x.id === roomId);
 
-		const connection = new RTCPeerConnection(this._configuration);
+		const remoteConnection = new RTCPeerConnection(this._configuration);
+
+		remoteConnection.ontrack = (e) => {
+			debugger;
+			console.log(e);
+		}
+
+		this._ownConnection.onicecandidate = (event) => {
+			remoteConnection.addIceCandidate(event.candidate);
+		}
+
+		remoteConnection.onicecandidate = (event) => {
+			this._ownConnection.addIceCandidate(event.candidate);
+		}
 
 		// Parse the remote offer and set it on our freshly created connection as remote description
 		const remoteDescription: RTCSessionDescriptionInit = JSON.parse(offer);
-		await connection.setRemoteDescription(remoteDescription);
+		await remoteConnection.setRemoteDescription(remoteDescription);
 
 		// Create an answer and set it on the local description of the stream
-		const localAnswer = await connection.createAnswer();
-		await connection.setLocalDescription(localAnswer);
+		const localAnswer = await remoteConnection.createAnswer();
+		await remoteConnection.setLocalDescription(localAnswer);
 
 		await this._ownConnection.setRemoteDescription(localAnswer);
 
-		// Add the new participant
-		const participant: VideoParticipant = {
-			connection,
-			id: offeringConnectionId,
-		};
+		const participant = room.participants.find(x => x.id === offeringConnectionId);
+
+		participant.connection = remoteConnection;
 
 		const newRoom: ChatRoom = {
 			...room,
-			participants: [...(room.participants ?? []), participant]
+			participants: [...room.participants]
 		}
 
 		this.dispatch(roomReducer.update(newRoom));

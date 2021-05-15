@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Common\Lyzo.Common.Core\Lyzo.Common.Core.csproj" />
+		<ProjectReference Include="..\..\Common\Lyzo.Common.Eventing\Lyzo.Common.Eventing.csproj" />
+	</ItemGroup>
+</Project>

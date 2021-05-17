@@ -1,4 +1,5 @@
 ﻿using System;
+using Lyzo.Common.Core.Utils.Retry;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -26,26 +27,22 @@ namespace Lyzo.Common.Eventing.MassTransit.Helper
 			bool isDevelopmentEnvironment,
 			Action<IBusFactoryConfigurator>? configFunc = null)
 		{
-			return Bus.Factory.CreateUsingInMemory(async config =>
+			return Bus.Factory.CreateUsingRabbitMq(async config =>
 			{
+				config.Durable = false;
+				config.AutoDelete = true;
+				config.PurgeOnStartup = true;
+
+				await RetryStrategy.DoRetryExponential(() =>
+				{
+					config.Host($"rabbitmq://{_configuration["Lyzo_RabbitMq"]}");
+				}, retryCount =>
+				{
+					_logger.LogInformation($"Retrying RabbitMQ setup for the {retryCount}# time");
+				});
+
 				configFunc?.Invoke(config);
 			});
-			//return Bus.Factory.CreateUsingRabbitMq(async config =>
-			//{
-			//	config.Durable = false;
-			//	config.AutoDelete = true;
-			//	config.PurgeOnStartup = true;
-
-			//	await RetryStrategy.DoRetryExponential(() =>
-			//	{
-			//		config.Host($"rabbitmq://{_configuration["MoonWatch_RabbitMq"]}");
-			//	}, retryCount =>
-			//	{
-			//		_logger.LogInformation($"Retrying RabbitMQ setup for the {retryCount}# time");
-			//	});
-
-			//	configFunc?.Invoke(config);
-			//});
 		}
 	}
 }

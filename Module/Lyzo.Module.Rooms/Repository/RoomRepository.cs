@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lyzo.Common.Database.Context;
 using Lyzo.Common.Database.Repository;
@@ -30,6 +31,11 @@ namespace Lyzo.Module.Rooms.Repository
 			await using var ctx = CreateContext();
 
 			return await ctx.Rooms.ToListAsync();
+		}
+
+		public Task<Room> GetRoom(Guid roomId)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

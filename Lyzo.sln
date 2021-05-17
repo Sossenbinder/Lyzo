@@ -31,7 +31,9 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo.Common.Database", "Common\Lyzo.Common.Database\Lyzo.Common.Database.csproj", "{E7E8FEDA-7AF6-456C-94B5-E828322CCBBB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyzo.Module.ServiceBase", "Module\Lyzo.Module.ServiceBase\Lyzo.Module.ServiceBase.csproj", "{60BBA3D5-61A0-4C62-B8AF-BD654B060218}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lyzo.Module.ServiceBase", "Module\Lyzo.Module.ServiceBase\Lyzo.Module.ServiceBase.csproj", "{60BBA3D5-61A0-4C62-B8AF-BD654B060218}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lyzo.Common.Definitions", "Common\Lyzo.Common.Definitions\Lyzo.Common.Definitions.csproj", "{A2AB278E-6018-405F-93E7-2207C598054F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,6 +93,10 @@ Global
 		{60BBA3D5-61A0-4C62-B8AF-BD654B060218}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60BBA3D5-61A0-4C62-B8AF-BD654B060218}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60BBA3D5-61A0-4C62-B8AF-BD654B060218}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2AB278E-6018-405F-93E7-2207C598054F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2AB278E-6018-405F-93E7-2207C598054F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2AB278E-6018-405F-93E7-2207C598054F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2AB278E-6018-405F-93E7-2207C598054F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,6 +113,7 @@ Global
 		{732BD885-D798-424E-B93C-04BCF81C1C59} = {891BE18B-C59C-465A-ADE9-4C78DB7FAEAB}
 		{E7E8FEDA-7AF6-456C-94B5-E828322CCBBB} = {96CFF769-BD99-4568-99B8-4484A78E2980}
 		{60BBA3D5-61A0-4C62-B8AF-BD654B060218} = {891BE18B-C59C-465A-ADE9-4C78DB7FAEAB}
+		{A2AB278E-6018-405F-93E7-2207C598054F} = {96CFF769-BD99-4568-99B8-4484A78E2980}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3B2621B2-4A4C-4C06-84EB-5C46D7429FCB}

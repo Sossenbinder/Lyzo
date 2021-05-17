@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Lyzo.Common.SignalR.Service.Interface;
 using Lyzo.Common.Web.DataTypes.Responses;
 using Lyzo.Controllers.Base;
 using Lyzo.Module.Rooms.DataTypes;
@@ -11,7 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Lyzo.Controllers
 {
-	public record GetConnectedClientsRequest(string RoomId);
+	extern alias SignalRProjReference;
+
+	public record GetConnectedClientsRequest(Guid RoomId);
 
 	[Route("[controller]")]
 	public class RoomController : IdentityControllerBase
@@ -20,12 +21,12 @@ namespace Lyzo.Controllers
 
 		private readonly IRoomParticipantService _roomParticipantService;
 
-		private readonly IConnectionMappingService _connectionMappingService;
+		private readonly SignalRProjReference::Lyzo.Common.SignalR.Service.Interface.IConnectionMappingService _connectionMappingService;
 
 		public RoomController(
 			IRoomManagementService roomManagementService,
 			IRoomParticipantService roomParticipantService,
-			IConnectionMappingService connectionMappingService)
+			SignalRProjReference::Lyzo.Common.SignalR.Service.Interface.IConnectionMappingService connectionMappingService)
 		{
 			_roomManagementService = roomManagementService;
 			_roomParticipantService = roomParticipantService;
@@ -43,9 +44,9 @@ namespace Lyzo.Controllers
 
 		[HttpPost]
 		[Route("GetConnectedClients")]
-		public JsonDataResponse<List<RoomParticipant>> GetConnectedClients([FromBody] GetConnectedClientsRequest request)
+		public async Task<JsonDataResponse<List<RoomParticipant>>> GetConnectedClients([FromBody] GetConnectedClientsRequest request)
 		{
-			var participants = _roomParticipantService.GetConnectedClients(request.RoomId);
+			var participants = await _roomParticipantService.GetConnectedClients(request.RoomId);
 
 			var ownId = _connectionMappingService.GetIdForClient(UserId.ToString())!;
 

@@ -7,11 +7,16 @@
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.2.0" />
 		<PackageReference Include="MassTransit" Version="7.1.8" />
+		<PackageReference Include="MassTransit.RabbitMQ" Version="7.1.8" />
+		<PackageReference Include="MassTransit.SignalR" Version="7.1.8" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="1.1.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="1.1.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Lyzo.Common.Core\Lyzo.Common.Core.csproj" />
+		<ProjectReference Include="..\Lyzo.Common.Definitions\Lyzo.Common.Definitions.csproj" />
 		<ProjectReference Include="..\Lyzo.Common.DI\Lyzo.Common.DI.csproj" />
 	</ItemGroup>
-		</Project>
+</Project>

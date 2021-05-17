@@ -43413,6 +43413,7 @@ const Room = ({ room, roomsService }) => {
         React.createElement(Flex_1.default, { className: "RoomInfo", direction: "Column" },
             React.createElement("p", { className: "Name" }, room.name),
             React.createElement("p", { className: "Description" }, room.description)),
+        React.createElement(Flex_1.default, { className: "RoomMetaData" }, room.participants.length),
         React.createElement(core_1.Button, { className: "JoinButton", color: "primary", onClick: onJoin, variant: "contained" }, "Join")));
 };
 exports.Room = Room;
@@ -43602,7 +43603,7 @@ const types_1 = __webpack_require__(/*! modules/Rooms/types */ "./React/modules/
 class RoomService extends ModuleService_1.default {
     constructor(signalRConnectionProvider, webRtcService) {
         super();
-        this.onJoined = async (roomId) => {
+        this.onJoinConfirmed = (roomId) => {
             const state = this.getStore().roomReducer.data;
             const room = state.find(x => x.id === roomId);
             if (room) {
@@ -43613,25 +43614,32 @@ class RoomService extends ModuleService_1.default {
                 this.dispatch(RoomReducer_1.reducer.update(newRoom));
             }
         };
-        this.onNewParticipant = async (roomId, connectionId) => {
+        this.onNewParticipant = (roomId, connectionId) => {
             const state = this.getStore().roomReducer.data;
             const room = state.find(x => x.id === roomId);
-            if (room) {
-                const participants = [...(room.participants ?? [])];
-                participants.push({
-                    connection: this._webRtcService.createConnection(),
-                    id: connectionId,
-                });
-                this.dispatch(RoomReducer_1.reducer.update({
-                    ...room,
-                    participants,
-                }));
-            }
+            const participants = [...(room.participants ?? [])];
+            participants.push({
+                connection: this._webRtcService.createConnection(),
+                id: connectionId,
+            });
+            this.dispatch(RoomReducer_1.reducer.update({
+                ...room,
+                participants,
+            }));
+        };
+        this.onParticipantCountUpdated = (roomId, participantCount) => {
+            const state = this.getStore().roomReducer.data;
+            const room = state.find(x => x.id === roomId);
+            this.dispatch(RoomReducer_1.reducer.update({
+                ...room,
+                participantCount,
+            }));
         };
         this._webRtcService = webRtcService;
         this._hubConnection = signalRConnectionProvider.SignalRConnection;
-        this._hubConnection.on(types_1.RoomNotifications.joined, this.onJoined);
-        this._hubConnection.on(types_1.RoomNotifications.newParticipant, this.onNewParticipant);
+        this._hubConnection.on(types_1.SignalR.Incoming.joinConfirmation, this.onJoinConfirmed);
+        this._hubConnection.on(types_1.SignalR.Incoming.newParticipant, this.onNewParticipant);
+        this._hubConnection.on(types_1.SignalR.Incoming.participantCountUpdated, this.onParticipantCountUpdated);
     }
     start() {
         return Promise.resolve();
@@ -43669,11 +43677,15 @@ exports.default = RoomService;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.RoomNotifications = void 0;
-exports.RoomNotifications = {
-    joined: "joined",
-    newParticipant: "newParticipant",
-};
+exports.SignalR = void 0;
+var SignalR;
+(function (SignalR) {
+    SignalR.Incoming = {
+        joinConfirmation: "joinConfirmation",
+        newParticipant: "newParticipant",
+        participantCountUpdated: "participantCountUpdated",
+    };
+})(SignalR = exports.SignalR || (exports.SignalR = {}));
 
 
 /***/ }),
@@ -43790,15 +43802,19 @@ class WebRTCService extends ModuleService_1.default {
                 if (!event.candidate) {
                     return;
                 }
-                await this._signalRConnection.send(types_1.VideoNotifications.shareCandidate, roomId, offeringConnectionId, JSON.stringify(event.candidate));
+                await this._signalRConnection.send(types_1.SignalR.Outgoing.shareCandidate, roomId, offeringConnectionId, JSON.stringify(event.candidate));
             };
             const remoteDescription = JSON.parse(offer);
             await remoteConnection.setRemoteDescription(remoteDescription);
             const localAnswer = await remoteConnection.createAnswer();
             await remoteConnection.setLocalDescription(localAnswer);
-            await this._signalRConnection.send(types_1.VideoNotifications.respondToRemoteOffer, roomId, offeringConnectionId, JSON.stringify(localAnswer));
+            await this._signalRConnection.send(types_1.SignalR.Outgoing.respondToRemoteOffer, roomId, offeringConnectionId, JSON.stringify(localAnswer));
         };
-        this.createConnection = () => new RTCPeerConnection(this._configuration);
+        this.createConnection = () => {
+            const connection = new RTCPeerConnection(this._configuration);
+            this._mediaStream.getTracks().forEach(x => connection.addTrack(x, this._mediaStream));
+            return connection;
+        };
         this.onOfferRespondedTo = async (roomId, respondingId, answer) => {
             const room = this.getStore().roomReducer.data.find(x => x.id === roomId);
             const participant = room.participants.find(x => x.id === respondingId);
@@ -43814,9 +43830,9 @@ class WebRTCService extends ModuleService_1.default {
             }
         };
         this._signalRConnection = signalRConnectionProvider.SignalRConnection;
-        this._signalRConnection.on(types_1.VideoNotifications.offerRespondedTo, this.onOfferRespondedTo);
-        this._signalRConnection.on(types_1.VideoNotifications.remoteOffer, this.handleRemoteOffer);
-        this._signalRConnection.on(types_1.VideoNotifications.iceCandidateReceived, this.onIceCandidateReceived);
+        this._signalRConnection.on(types_1.SignalR.Incoming.offerRespondedTo, this.onOfferRespondedTo);
+        this._signalRConnection.on(types_1.SignalR.Incoming.remoteOffer, this.handleRemoteOffer);
+        this._signalRConnection.on(types_1.SignalR.Incoming.iceCandidateReceived, this.onIceCandidateReceived);
     }
     start() {
         return Promise.resolve();
@@ -43844,22 +43860,15 @@ class WebRTCService extends ModuleService_1.default {
         newRoom.participants = newParticipantSet;
         this.dispatch(RoomReducer_1.reducer.update(newRoom));
         await asyncUtils_1.asyncForEachParallel(Array.from(connectionMap), async ([key, value]) => {
-            this._mediaStream.getTracks().forEach(x => value.addTrack(x, this._mediaStream));
             const offer = await value.createOffer();
             await value.setLocalDescription(offer);
-            value.oniceconnectionstatechange = function () {
-                console.log('ICE state: ', value.iceConnectionState);
-            };
             value.onicecandidate = async (event) => {
                 if (!event.candidate) {
                     return;
                 }
-                await this._signalRConnection.send(types_1.VideoNotifications.shareCandidate, roomId, key, JSON.stringify(event));
+                await this._signalRConnection.send(types_1.SignalR.Outgoing.shareCandidate, roomId, key, JSON.stringify(event.candidate));
             };
-            value.ontrack = event => {
-                console.log(event);
-            };
-            await this._signalRConnection.send(types_1.VideoNotifications.offerRtc, roomId, key, JSON.stringify(offer));
+            await this._signalRConnection.send(types_1.SignalR.Outgoing.offerRtc, roomId, key, JSON.stringify(offer));
         });
     }
 }
@@ -43877,17 +43886,21 @@ exports.default = WebRTCService;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.VideoNotifications = void 0;
-exports.VideoNotifications = {
-    connectionReady: "connectionReady",
-    newParticipant: "newParticipant",
-    offerRtc: "offerRtc",
-    remoteOffer: "remoteOffer",
-    respondToRemoteOffer: "respondToRemoteOffer",
-    offerRespondedTo: "offerRespondedTo",
-    shareCandidate: "shareCandidate",
-    iceCandidateReceived: "iceCandidateReceived",
-};
+exports.SignalR = void 0;
+var SignalR;
+(function (SignalR) {
+    SignalR.Incoming = {
+        offerRespondedTo: "offerRespondedTo",
+        remoteOffer: "remoteOffer",
+        iceCandidateReceived: "iceCandidateReceived",
+        newParticipant: "newParticipant",
+    };
+    SignalR.Outgoing = {
+        shareCandidate: "shareCandidate",
+        offerRtc: "offerRtc",
+        respondToRemoteOffer: "respondToRemoteOffer",
+    };
+})(SignalR = exports.SignalR || (exports.SignalR = {}));
 
 
 /***/ }),
@@ -44200,7 +44213,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".RoomContainer {\n  border: 1px groove grey;\n  border-radius: 5px;\n  margin-right: 5px;\n  min-height: 30px;\n}\n.RoomContainer .RoomInfo {\n  width: 100%;\n}\n.RoomContainer .Name {\n  margin: 5px 5px 0 5px;\n  border-bottom: 1px solid lightgrey;\n}\n.RoomContainer .Description {\n  margin: 5px 0 0 5px;\n}\n.RoomContainer .JoinButton {\n  margin: 0 5px 0 5px;\n  height: 25px;\n}\n", "",{"version":3,"sources":["webpack://./React/modules/Rooms/Components/Styles/Room.less"],"names":[],"mappings":"AAAA;EACC,uBAAA;EACA,kBAAA;EACA,iBAAA;EACA,gBAAA;AACD;AALA;EAOE,WAAA;AACF;AARA;EAWE,qBAAA;EACA,kCAAA;AAAF;AAZA;EAgBE,mBAAA;AADF;AAfA;EAoBE,mBAAA;EACA,YAAA;AAFF","sourcesContent":[".RoomContainer {\n\tborder: 1px groove grey;\n\tborder-radius: 5px;\n\tmargin-right: 5px;\n\tmin-height: 30px;\n\n\t.RoomInfo {\n\t\twidth: 100%;\n\t}\n\n\t.Name {\n\t\tmargin: 5px 5px 0 5px;\n\t\tborder-bottom: 1px solid lightgrey;\n\t}\n\n\t.Description {\n\t\tmargin: 5px 0 0 5px;\n\t}\n\n\t.JoinButton {\n\t\tmargin: 0 5px 0 5px;\n\t\theight: 25px;\n\t}\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, ".RoomContainer {\n  border: 1px groove grey;\n  border-radius: 5px;\n  margin-right: 5px;\n  min-height: 30px;\n}\n.RoomContainer .RoomInfo {\n  width: 100%;\n}\n.RoomContainer .Name {\n  margin: 5px 5px 0 5px;\n  border-bottom: 1px solid lightgrey;\n}\n.RoomContainer .Description {\n  margin: 5px 0 0 5px;\n}\n.RoomContainer .JoinButton {\n  margin: 0 5px 0 5px;\n  height: 25px;\n}\n.RoomContainer .RoomMetaData {\n  margin: 0 5px 0 5px;\n  width: 50px;\n}\n", "",{"version":3,"sources":["webpack://./React/modules/Rooms/Components/Styles/Room.less"],"names":[],"mappings":"AAAA;EACC,uBAAA;EACA,kBAAA;EACA,iBAAA;EACA,gBAAA;AACD;AALA;EAOE,WAAA;AACF;AARA;EAWE,qBAAA;EACA,kCAAA;AAAF;AAZA;EAgBE,mBAAA;AADF;AAfA;EAoBE,mBAAA;EACA,YAAA;AAFF;AAnBA;EAyBE,mBAAA;EACA,WAAA;AAHF","sourcesContent":[".RoomContainer {\n\tborder: 1px groove grey;\n\tborder-radius: 5px;\n\tmargin-right: 5px;\n\tmin-height: 30px;\n\n\t.RoomInfo {\n\t\twidth: 100%;\n\t}\n\n\t.Name {\n\t\tmargin: 5px 5px 0 5px;\n\t\tborder-bottom: 1px solid lightgrey;\n\t}\n\n\t.Description {\n\t\tmargin: 5px 0 0 5px;\n\t}\n\n\t.JoinButton {\n\t\tmargin: 0 5px 0 5px;\n\t\theight: 25px;\n\t}\n\n\t.RoomMetaData {\n\t\tmargin: 0 5px 0 5px;\n\t\twidth: 50px;\n\t}\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -94852,7 +94865,6 @@ const WebRTCService_1 = __webpack_require__(/*! modules/Video/Service/WebRTCServ
 const RoomService_1 = __webpack_require__(/*! modules/Rooms/Service/RoomService */ "./React/modules/Rooms/Service/RoomService.ts");
 window.onload = async () => {
     const signalRConnectionProvider = new SignalRConnectionProvider_1.default();
-    await signalRConnectionProvider.start();
     RootComponent_1.default(signalRConnectionProvider, () => initCoreServices(signalRConnectionProvider), 3);
 };
 const initCoreServices = async (signalRProvider) => {
@@ -94871,6 +94883,7 @@ const initCoreServices = async (signalRProvider) => {
     initPromises.push((async () => {
         await fetch("/Identity/Identify");
     })());
+    await signalRProvider.start();
     const webRtcService = new WebRTCService_1.default(signalRProvider);
     initPromises.push(initService("WebRTCService", webRtcService));
     const roomService = new RoomService_1.default(signalRProvider, webRtcService);

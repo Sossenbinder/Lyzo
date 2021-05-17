@@ -2,11 +2,7 @@
 import * as React from "react";
 
 // Type
-import { VideoNotifications, VideoParticipant } from 'modules/Video/types';
-
-// Functionality
-import useServices from "common/Hooks/useServices";
-import useSignalR from 'common/Hooks/useSignalR';
+import { VideoParticipant } from 'modules/Video/types';
 
 // Styles
 import "./Styles/RemoteVideo.less";

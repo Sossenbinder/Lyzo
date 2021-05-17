@@ -9,12 +9,12 @@ import { reducer as roomReducer } from "modules/Rooms/Reducer/RoomReducer";
 
 // Types
 import ISignalRConnectionProvider from "common/Helper/SignalR/Interface/ISignalRConnectionProvider";
-import { VideoNotifications, VideoParticipant } from "modules/Video/types";
+import { SignalR, VideoParticipant } from "modules/Video/types";
 import { asyncForEachParallel } from "common/Helper/asyncUtils";
-import { ChatRoom } from 'modules/Rooms/types';
 
 export default class WebRTCService extends ModuleService implements IWebRTCService {
 
+	// Setup Ice servers
 	private readonly _configuration: RTCConfiguration = {
 		iceServers: [{
 			urls: 'stun:stun.l.google.com:19302'
@@ -23,15 +23,16 @@ export default class WebRTCService extends ModuleService implements IWebRTCServi
 
 	private _signalRConnection: signalR.HubConnection;
 
+	// Our local stream
 	private _mediaStream: MediaStream;
 
 	public constructor(signalRConnectionProvider: ISignalRConnectionProvider) {
 		super();
 
 		this._signalRConnection = signalRConnectionProvider.SignalRConnection;
-		this._signalRConnection.on(VideoNotifications.offerRespondedTo, this.onOfferRespondedTo);
-		this._signalRConnection.on(VideoNotifications.remoteOffer, this.handleRemoteOffer);
-		this._signalRConnection.on(VideoNotifications.iceCandidateReceived, this.onIceCandidateReceived);
+		this._signalRConnection.on(SignalR.Incoming.offerRespondedTo, this.onOfferRespondedTo);
+		this._signalRConnection.on(SignalR.Incoming.remoteOffer, this.handleRemoteOffer);
+		this._signalRConnection.on(SignalR.Incoming.iceCandidateReceived, this.onIceCandidateReceived);
 	}
 
 	public start() {
@@ -71,18 +72,12 @@ export default class WebRTCService extends ModuleService implements IWebRTCServi
 		newRoom.participants = newParticipantSet;
 		this.dispatch(roomReducer.update(newRoom));
 
-		// Offer on all connections
+		// Send an offer to all connected clients
 		await asyncForEachParallel(Array.from(connectionMap), async ([key, value]) => {
-
-			this._mediaStream.getTracks().forEach(x => value.addTrack(x, this._mediaStream));
 
 			// Create an offer and set our local description
 			const offer = await value.createOffer();
 			await value.setLocalDescription(offer);
-
-			value.oniceconnectionstatechange = function () {
-				console.log('ICE state: ', value.iceConnectionState);
-			}
 
 			value.onicecandidate = async (event) => {
 
@@ -90,15 +85,11 @@ export default class WebRTCService extends ModuleService implements IWebRTCServi
 					return;
 				}
 
-				await this._signalRConnection.send(VideoNotifications.shareCandidate, roomId, key, JSON.stringify(event));
-			}
-
-			value.ontrack = event => {
-				console.log(event);
+				await this._signalRConnection.send(SignalR.Outgoing.shareCandidate, roomId, key, JSON.stringify(event.candidate));
 			}
 
 			// Signal our offer
-			await this._signalRConnection.send(VideoNotifications.offerRtc, roomId, key, JSON.stringify(offer));
+			await this._signalRConnection.send(SignalR.Outgoing.offerRtc, roomId, key, JSON.stringify(offer));
 		})
 	}
 
@@ -115,7 +106,7 @@ export default class WebRTCService extends ModuleService implements IWebRTCServi
 				return;
 			}
 
-			await this._signalRConnection.send(VideoNotifications.shareCandidate, roomId, offeringConnectionId, JSON.stringify(event.candidate));
+			await this._signalRConnection.send(SignalR.Outgoing.shareCandidate, roomId, offeringConnectionId, JSON.stringify(event.candidate));
 		}
 
 		// Parse the remote offer and set it on our freshly created connection as remote description
@@ -127,10 +118,17 @@ export default class WebRTCService extends ModuleService implements IWebRTCServi
 		await remoteConnection.setLocalDescription(localAnswer);
 
 		// Signal that we have responded to the offer and include our answer
-		await this._signalRConnection.send(VideoNotifications.respondToRemoteOffer, roomId, offeringConnectionId, JSON.stringify(localAnswer));
+		await this._signalRConnection.send(SignalR.Outgoing.respondToRemoteOffer, roomId, offeringConnectionId, JSON.stringify(localAnswer));
 	}
 
-	public createConnection = () => new RTCPeerConnection(this._configuration);
+	// Create a connection with local stream on top
+	public createConnection = () => {
+		const connection = new RTCPeerConnection(this._configuration);
+
+		this._mediaStream.getTracks().forEach(x => connection.addTrack(x, this._mediaStream));
+
+		return connection;
+	}
 
 	// Callback raised by response to an offer
 	private onOfferRespondedTo = async (roomId: string, respondingId: string, answer: string) => {

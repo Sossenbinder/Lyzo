@@ -7,6 +7,8 @@ export type ChatRoom = {
 	creationdate: Date;
 	participants: Array<VideoParticipant>;
 	joined: boolean;
+	participantCount: number;
+	maxParticpants: number;
 }
 
 export type ConnectedParticipant = {
@@ -36,7 +38,10 @@ export namespace Network {
 	}
 }
 
-export const RoomNotifications = {
-	joined: "joined",
-	newParticipant: "newParticipant",
+export namespace SignalR {
+	export const Incoming = {
+		joinConfirmation: "joinConfirmation",
+		newParticipant: "newParticipant",
+		participantCountUpdated: "participantCountUpdated",
+	}
 }

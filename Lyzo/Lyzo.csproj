@@ -8,6 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="MassTransit.Autofac" Version="7.1.8" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.13" />
 	</ItemGroup>
 
@@ -24,9 +25,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Common\Lyzo.Common.Definitions\Lyzo.Common.Definitions.csproj">
+			<Aliases>CommonDefinitionsProjReference</Aliases>
+		</ProjectReference>
 		<ProjectReference Include="..\Common\Lyzo.Common.Eventing\Lyzo.Common.Eventing.csproj" />
 		<ProjectReference Include="..\Common\Lyzo.Common.Logging\Lyzo.Common.Logging.csproj" />
-		<ProjectReference Include="..\Common\Lyzo.Common.SignalR\Lyzo.Common.SignalR.csproj" />
+		<ProjectReference Include="..\Common\Lyzo.Common.SignalR\Lyzo.Common.SignalR.csproj">
+			<Aliases>SignalRProjReference</Aliases>
+		</ProjectReference>
 		<ProjectReference Include="..\Common\Lyzo.Common.Web\Lyzo.Common.Web.csproj" />
 		<ProjectReference Include="..\Module\Lyzo.Module.Rooms\Lyzo.Module.Rooms.csproj" />
 		<ProjectReference Include="..\Module\Lyzo.Module.Voice\Lyzo.Module.Voice.csproj" />

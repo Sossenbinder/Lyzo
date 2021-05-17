@@ -16,7 +16,6 @@ import { Services, IModuleService } from "common/Modules/Service/types";
 
 window.onload = async () => {
 	const signalRConnectionProvider = new SignalRConnectionProvider();
-	await signalRConnectionProvider.start();
 
 	renderRoot(signalRConnectionProvider, () => initCoreServices(signalRConnectionProvider), 3);
 }
@@ -42,6 +41,8 @@ const initCoreServices = async (signalRProvider: ISignalRConnectionProvider) => 
 	initPromises.push((async () => {
 		await fetch("/Identity/Identify");
 	})());
+
+	await signalRProvider.start();
 
 	const webRtcService = new WebRTCService(signalRProvider);
 	initPromises.push(initService("WebRTCService", webRtcService));

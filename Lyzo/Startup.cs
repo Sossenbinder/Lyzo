@@ -1,27 +1,22 @@
+extern alias CommonDefinitionsProjReference;
+extern alias SignalRProjReference;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Autofac;
 using Lyzo.Common.Eventing.DI;
-using Lyzo.Common.Eventing.Extensions;
-using Lyzo.Common.Eventing.MassTransit.Helper;
 using Lyzo.Common.Logging.Log;
 using MassTransit;
+using MassTransit.SignalR;
 using Microsoft.AspNetCore.DataProtection;
 using Serilog;
-using Lyzo.Common.SignalR;
-using Lyzo.Common.SignalR.DI;
 using Lyzo.Module.Rooms.DI;
+using SignalRProjReference::Lyzo.Common.SignalR.DI;
 
 namespace Lyzo
 {
@@ -52,6 +47,20 @@ namespace Lyzo
 
 			services.AddMemoryCache();
 
+			services.AddMassTransit(x =>
+			{
+				x.AddSignalRHub<SignalRProjReference::Lyzo.Common.SignalR.SignalRHub>();
+
+				x.UsingRabbitMq((ctx, cfg) =>
+				{
+					cfg.Durable = false;
+					cfg.AutoDelete = true;
+					cfg.PurgeOnStartup = true;
+
+					cfg.Host($"rabbitmq://{Configuration["Lyzo_RabbitMq"]}");
+				});
+			});
+
 			if (_isDevelopmentEnvironment)
 			{
 				services.AddDataProtection()
@@ -72,18 +81,6 @@ namespace Lyzo
 			builder.RegisterModule<MassTransitModule>();
 			builder.RegisterModule<RoomsModule>();
 			builder.RegisterModule<SignalRModule>();
-
-			builder.Register(context =>
-				{
-					return context.Resolve<MassTransitBusFactory>().CreateBus(_isDevelopmentEnvironment, cfg =>
-					{
-						cfg.ReceiveEndpoint(Dns.GetHostName(), ec =>
-						{
-							ec.RegisterMassTransitConsumers(context);
-						});
-					});
-				}).As<IBus, IBusControl>()
-				.SingleInstance();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -114,7 +111,7 @@ namespace Lyzo
 
 				endpoints.MapFallbackToController("Index", "Home");
 
-				endpoints.MapHub<SignalRHub>("/signalRHub");
+				endpoints.MapHub<SignalRProjReference::Lyzo.Common.SignalR.SignalRHub>("/signalRHub");
 			});
 		}
 	}

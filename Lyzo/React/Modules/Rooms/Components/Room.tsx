@@ -38,6 +38,10 @@ export const Room: React.FC<Props> = ({ room, roomsService }) => {
 					{room.description}
 				</p>
 			</Flex>
+			<Flex
+				className="RoomMetaData">
+				{room.participants.length}
+			</Flex>
 			<Button
 				className="JoinButton"
 				color="primary"

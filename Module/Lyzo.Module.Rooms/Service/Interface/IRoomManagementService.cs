@@ -10,5 +10,7 @@ namespace Lyzo.Module.Rooms.Service.Interface
 		Task<Guid> CreateRoom(Room room);
 
 		Task<List<Room>> GetRooms();
+
+		Task<Room> GetRoom(Guid roomId);
 	}
 }

@@ -12,5 +12,11 @@ namespace Lyzo.Module.Rooms.Repository.Context
 			: base(connectionString)
 		{
 		}
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			modelBuilder.Entity<Room>().Ignore(x => x.Participants);
+			modelBuilder.Entity<Room>().Ignore(x => x.Participants);
+		}
 	}
 }

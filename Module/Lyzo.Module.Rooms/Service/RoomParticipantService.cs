@@ -1,5 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Lyzo.Common.Eventing.DataTypes;
+using Lyzo.Common.Eventing.Helper;
+using Lyzo.Common.Eventing.MassTransit.Service.Interface;
 using Lyzo.Module.Rooms.DataTypes;
 using Lyzo.Module.Rooms.DataTypes.Events;
 using Lyzo.Module.Rooms.Events.Interface;
@@ -10,52 +15,69 @@ namespace Lyzo.Module.Rooms.Service
 {
 	public class RoomParticipantService : LyzoServiceBaseWithoutLogger, IRoomParticipantService
 	{
-		private readonly Dictionary<string, RoomInfo> _roomInfo;
+		private readonly IRoomManagementService _roomManagementService;
 
-		public RoomParticipantService(IRoomEvents roomEvents)
+		private readonly IMassTransitSignalRBackplaneService _signalRBackplaneService;
+
+		private readonly Dictionary<Guid, List<RoomParticipant>> _participantInfo;
+
+		public RoomParticipantService(
+			IRoomEvents roomEvents,
+			IRoomManagementService roomManagementService,
+			IMassTransitSignalRBackplaneService signalRBackplaneService)
 		{
-			_roomInfo = new();
+			_roomManagementService = roomManagementService;
+			_signalRBackplaneService = signalRBackplaneService;
+			_participantInfo = new();
 
 			RegisterEventHandler(roomEvents.ParticipantJoined, OnParticipantJoined);
 			RegisterEventHandler(roomEvents.ParticipantDisconnected, OnParticipantDisconnected);
 		}
 
-		private void OnParticipantJoined(ParticipantJoined participantJoinedArg)
+		public Task<List<RoomParticipant>> GetConnectedClients(Guid roomId)
+		{
+			return GetConnectedClientsInternal(roomId);
+		}
+
+		private async Task OnParticipantJoined(ParticipantJoined participantJoinedArg)
 		{
 			var (roomId, participantId) = participantJoinedArg;
 
-			var hasValue = _roomInfo.TryGetValue(roomId, out var roomInfo);
+			var participants = await GetConnectedClientsInternal(roomId);
+
+			participants.Add(new RoomParticipant(participantId));
+
+			await _signalRBackplaneService.RaiseAllSignalREvent(NotificationFactory.Update(participants.Count, NotificationType.ParticipantUpdate));
+		}
+
+		private async Task OnParticipantDisconnected(ParticipantDisconnected args)
+		{
+			var rooms = _participantInfo
+				.Select(x => x.Value)
+				.Where(x => x.Any(x => x.ConnectionId == args.ParticipantId));
+
+			foreach (var participants in rooms)
+			{
+				var index = participants.FindIndex(x => x.ConnectionId == args.ParticipantId);
+				participants.RemoveAt(index);
+
+				await _signalRBackplaneService.RaiseAllSignalREvent(NotificationFactory.Update(participants.Count, NotificationType.ParticipantUpdate));
+			}
+		}
+
+		private async Task<List<RoomParticipant>> GetConnectedClientsInternal(Guid roomId)
+		{
+			var hasValue = _participantInfo.TryGetValue(roomId, out var participants);
 
 			if (!hasValue)
 			{
-				roomInfo = new RoomInfo();
-				_roomInfo.Add(roomId, roomInfo);
+				var room = await _roomManagementService.GetRoom(roomId);
+				_participantInfo.Add(roomId, room.Participants);
+
+				participants = room.Participants;
 			}
 
-			roomInfo!.Participants.Add(new RoomParticipant(participantId));
-		}
-
-		private void OnParticipantDisconnected(ParticipantDisconnected args)
-		{
-			var roomInfos = _roomInfo
-				.Select(x => x.Value)
-				.Where(x => x.Participants.Any(x => x.ConnectionId == args.ParticipantId));
-
-			foreach (var roomInfo in roomInfos)
-			{
-				var index = roomInfo.Participants.FindIndex(x => x.ConnectionId == args.ParticipantId);
-				roomInfo.Participants.RemoveAt(index);
-			}
-		}
-
-		public List<RoomParticipant> GetConnectedClients(string roomId)
-		{
-			if (_roomInfo.TryGetValue(roomId, out var roomInfo))
-			{
-				return roomInfo.Participants;
-			}
-
-			return new List<RoomParticipant>();
+			return participants!;
 		}
 	}
 }

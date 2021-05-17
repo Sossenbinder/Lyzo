@@ -9,12 +9,16 @@ namespace Lyzo.Common.Eventing.DI
 	{
 		protected override void Load(ContainerBuilder builder)
 		{
-			builder.RegisterType<MassTransitBusFactory>()
-				.AsSelf()
-				.SingleInstance();
+			//builder.RegisterType<MassTransitBusFactory>()
+			//	.AsSelf()
+			//	.SingleInstance();
 
 			builder.RegisterType<MassTransitEventingService>()
 				.As<IStartable, IMassTransitEventingService>()
+				.SingleInstance();
+
+			builder.RegisterType<MassTransitSignalRBackplaneService>()
+				.As<IMassTransitSignalRBackplaneService>()
 				.SingleInstance();
 		}
 	}

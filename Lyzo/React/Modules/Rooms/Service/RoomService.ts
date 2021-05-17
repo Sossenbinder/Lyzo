@@ -6,11 +6,10 @@ import { IRoomService } from "common/Modules/Service/types";
 import ModuleService from "common/Modules/Service/ModuleService";
 import * as roomCommunication from "modules/Rooms/Communication/RoomCommunication";
 import { reducer as roomReducer } from "modules/Rooms/Reducer/RoomReducer";
-import { asyncForEachParallel } from "common/Helper/asyncUtils";
 
 // Types
 import ISignalRConnectionProvider from "common/Helper/SignalR/Interface/ISignalRConnectionProvider";
-import { ChatRoom, RoomNotifications, ConnectedParticipant } from "modules/Rooms/types";
+import { ChatRoom, SignalR } from "modules/Rooms/types";
 import { IWebRTCService } from 'common/Modules/Service/types';
 
 export default class RoomService extends ModuleService implements IRoomService {
@@ -27,8 +26,9 @@ export default class RoomService extends ModuleService implements IRoomService {
 		this._webRtcService = webRtcService;
 
 		this._hubConnection = signalRConnectionProvider.SignalRConnection;
-		this._hubConnection.on(RoomNotifications.joined, this.onJoined);
-		this._hubConnection.on(RoomNotifications.newParticipant, this.onNewParticipant);
+		this._hubConnection.on(SignalR.Incoming.joinConfirmation, this.onJoinConfirmed);
+		this._hubConnection.on(SignalR.Incoming.newParticipant, this.onNewParticipant);
+		this._hubConnection.on(SignalR.Incoming.participantCountUpdated, this.onParticipantCountUpdated);
 	}
 
 	public start() {
@@ -59,7 +59,7 @@ export default class RoomService extends ModuleService implements IRoomService {
 		await this._hubConnection.send("joinRoom", roomId);
 	}
 
-	private onJoined = async (roomId: string) => {
+	private onJoinConfirmed = (roomId: string) => {
 
 		const state = this.getStore().roomReducer.data;
 		const room = state.find(x => x.id === roomId);
@@ -74,23 +74,32 @@ export default class RoomService extends ModuleService implements IRoomService {
 		}
 	}
 
-	private onNewParticipant = async (roomId: string, connectionId: string) => {
+	private onNewParticipant = (roomId: string, connectionId: string) => {
 
 		const state = this.getStore().roomReducer.data;
 		const room = state.find(x => x.id === roomId);
 
-		if (room) {
-			const participants = [...(room.participants ?? [])];
+		const participants = [...(room.participants ?? [])];
 
-			participants.push({
-				connection: this._webRtcService.createConnection(),
-				id: connectionId,
-			});
+		participants.push({
+			connection: this._webRtcService.createConnection(),
+			id: connectionId,
+		});
 
-			this.dispatch(roomReducer.update({
-				...room,
-				participants,
-			}));
-		}
+		this.dispatch(roomReducer.update({
+			...room,
+			participants,
+		}));
+	}
+
+	private onParticipantCountUpdated = (roomId: string, participantCount: number) => {
+
+		const state = this.getStore().roomReducer.data;
+		const room = state.find(x => x.id === roomId);
+
+		this.dispatch(roomReducer.update({
+			...room,
+			participantCount,
+		}));
 	}
 }

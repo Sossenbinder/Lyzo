@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using Lyzo.Common.Database.Extensions;
+using Lyzo.Module.Rooms.Abstractions.Events;
 using Lyzo.Module.Rooms.Events;
-using Lyzo.Module.Rooms.Events.Interface;
 using Lyzo.Module.Rooms.Repository;
 using Lyzo.Module.Rooms.Repository.Context;
 using Lyzo.Module.Rooms.Repository.Interface;

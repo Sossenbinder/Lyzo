@@ -18,5 +18,6 @@
 		<ProjectReference Include="..\Lyzo.Common.Core\Lyzo.Common.Core.csproj" />
 		<ProjectReference Include="..\Lyzo.Common.Definitions\Lyzo.Common.Definitions.csproj" />
 		<ProjectReference Include="..\Lyzo.Common.DI\Lyzo.Common.DI.csproj" />
+		<ProjectReference Include="..\Lyzo.Common.SignalR\Lyzo.Common.SignalR.csproj" />
 	</ItemGroup>
 </Project>

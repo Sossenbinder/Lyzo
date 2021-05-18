@@ -23,7 +23,7 @@ export const LoadingBar: React.FC<Props> = ({ progress }) => {
 					className="ProgressLabel"
 					crossAlign="Center"
 					mainAlign="Center">
-					{`${progress}%`}
+					{`${progress.toFixed(0)}%`}
 				</Flex>
 			</div>
 		</div>

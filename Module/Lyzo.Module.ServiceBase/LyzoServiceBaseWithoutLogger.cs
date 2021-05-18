@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Lyzo.Common.Core.Disposable;
 using Lyzo.Common.Core.Extensions;
-using Lyzo.Common.Eventing.Events.Interface;
+using Lyzo.Common.Eventing.Abstractions.Events;
 using MassTransit;
 
 namespace Lyzo.Module.ServiceBase

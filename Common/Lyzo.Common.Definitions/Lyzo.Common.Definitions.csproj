@@ -4,6 +4,13 @@
 		<TargetFramework>net5.0</TargetFramework>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="MassTransit" Version="7.1.8" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Lyzo.Common.Core\Lyzo.Common.Core.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Eventing\" />
 	</ItemGroup>
 </Project>

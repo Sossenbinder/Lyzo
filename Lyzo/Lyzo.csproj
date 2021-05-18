@@ -25,13 +25,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Common\Lyzo.Common.Definitions\Lyzo.Common.Definitions.csproj">
-			<Aliases>CommonDefinitionsProjReference</Aliases>
-		</ProjectReference>
 		<ProjectReference Include="..\Common\Lyzo.Common.Eventing\Lyzo.Common.Eventing.csproj" />
 		<ProjectReference Include="..\Common\Lyzo.Common.Logging\Lyzo.Common.Logging.csproj" />
 		<ProjectReference Include="..\Common\Lyzo.Common.SignalR\Lyzo.Common.SignalR.csproj">
-			<Aliases>SignalRProjReference</Aliases>
+			<Aliases></Aliases>
 		</ProjectReference>
 		<ProjectReference Include="..\Common\Lyzo.Common.Web\Lyzo.Common.Web.csproj" />
 		<ProjectReference Include="..\Module\Lyzo.Module.Rooms\Lyzo.Module.Rooms.csproj" />

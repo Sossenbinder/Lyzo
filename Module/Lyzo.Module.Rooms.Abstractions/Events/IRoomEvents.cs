@@ -1,7 +1,6 @@
-﻿using Lyzo.Common.Eventing.Events.Interface;
-using Lyzo.Module.Rooms.DataTypes.Events;
+﻿using Lyzo.Common.Eventing.Abstractions.Events;
 
-namespace Lyzo.Module.Rooms.Events.Interface
+namespace Lyzo.Module.Rooms.Abstractions.Events
 {
 	public interface IRoomEvents
 	{

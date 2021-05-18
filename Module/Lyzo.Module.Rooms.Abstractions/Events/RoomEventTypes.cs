@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lyzo.Module.Rooms.DataTypes.Events
+namespace Lyzo.Module.Rooms.Abstractions.Events
 {
 	public record ParticipantJoined(Guid RoomId, string ParticipantId);
 

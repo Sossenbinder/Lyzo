@@ -42765,7 +42765,7 @@ const LoadingBar = ({ progress }) => {
         React.createElement("div", { className: "Bar", style: {
                 background: `linear-gradient(to right, grey, grey ${progress}%, transparent 1px, transparent 100%)`
             } },
-            React.createElement(Flex_1.default, { className: "ProgressLabel", crossAlign: "Center", mainAlign: "Center" }, `${progress}%`))));
+            React.createElement(Flex_1.default, { className: "ProgressLabel", crossAlign: "Center", mainAlign: "Center" }, `${progress.toFixed(0)}%`))));
 };
 exports.LoadingBar = LoadingBar;
 exports.default = exports.LoadingBar;
@@ -43413,7 +43413,7 @@ const Room = ({ room, roomsService }) => {
         React.createElement(Flex_1.default, { className: "RoomInfo", direction: "Column" },
             React.createElement("p", { className: "Name" }, room.name),
             React.createElement("p", { className: "Description" }, room.description)),
-        React.createElement(Flex_1.default, { className: "RoomMetaData" }, room.participants.length),
+        React.createElement(Flex_1.default, { className: "RoomMetaData" }, `${room.participantCount}/${room.maxParticpants ?? "∞"}`),
         React.createElement(core_1.Button, { className: "JoinButton", color: "primary", onClick: onJoin, variant: "contained" }, "Join")));
 };
 exports.Room = Room;
@@ -43627,19 +43627,21 @@ class RoomService extends ModuleService_1.default {
                 participants,
             }));
         };
-        this.onParticipantCountUpdated = (roomId, participantCount) => {
+        this.onParticipantUpdated = (notification) => {
+            const payload = notification.payload;
             const state = this.getStore().roomReducer.data;
-            const room = state.find(x => x.id === roomId);
+            const room = state.find(x => x.id === payload.roomId);
             this.dispatch(RoomReducer_1.reducer.update({
                 ...room,
-                participantCount,
+                participantCount: payload.count,
             }));
+            return Promise.resolve();
         };
         this._webRtcService = webRtcService;
         this._hubConnection = signalRConnectionProvider.SignalRConnection;
         this._hubConnection.on(types_1.SignalR.Incoming.joinConfirmation, this.onJoinConfirmed);
         this._hubConnection.on(types_1.SignalR.Incoming.newParticipant, this.onNewParticipant);
-        this._hubConnection.on(types_1.SignalR.Incoming.participantCountUpdated, this.onParticipantCountUpdated);
+        signalRConnectionProvider.registerNotificationHandler(types_1.SignalR.Incoming.participantUpdate, this.onParticipantUpdated);
     }
     start() {
         return Promise.resolve();
@@ -43655,7 +43657,9 @@ class RoomService extends ModuleService_1.default {
         let rooms = [];
         if (getRoomsResponse.success) {
             rooms = getRoomsResponse.payload;
-            rooms.forEach(room => room.participants = []);
+            rooms.forEach(room => {
+                room.participants = [];
+            });
         }
         this.dispatch(RoomReducer_1.reducer.replace(getRoomsResponse.success ? getRoomsResponse.payload : []));
     }
@@ -43683,7 +43687,7 @@ var SignalR;
     SignalR.Incoming = {
         joinConfirmation: "joinConfirmation",
         newParticipant: "newParticipant",
-        participantCountUpdated: "participantCountUpdated",
+        participantUpdate: "participantUpdate",
     };
 })(SignalR = exports.SignalR || (exports.SignalR = {}));
 

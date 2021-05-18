@@ -1,6 +1,3 @@
-export enum NotificationType {
-	StockPost,
-}
 
 export enum Operation {
 	Create,
@@ -10,9 +7,9 @@ export enum Operation {
 
 export type Notification<T> = {
 
-	readonly Operation: Operation;
+	readonly operation: Operation;
 
-	readonly NotificationType: NotificationType;
+	readonly notificationType: string;
 
-	readonly Payload: T;
+	readonly payload: T;
 }

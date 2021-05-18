@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Lyzo.Common.Core.Disposable;
 using MassTransit;
 
-namespace Lyzo.Common.Eventing.Events.Interface
+namespace Lyzo.Common.Eventing.Abstractions.Events
 {
 	public interface IDistributedEvent : IEvent
 	{

@@ -81,8 +81,8 @@ namespace Lyzo.Common.Eventing.MassTransit.Service
 			{
 				new
 				{
-					operation = notification.Operation,
-					data = notification.Payload,
+					Operation = notification.Operation,
+					Payload = notification.Payload,
 				}
 			};
 

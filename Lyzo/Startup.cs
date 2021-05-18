@@ -1,6 +1,3 @@
-extern alias CommonDefinitionsProjReference;
-extern alias SignalRProjReference;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -16,7 +13,8 @@ using MassTransit.SignalR;
 using Microsoft.AspNetCore.DataProtection;
 using Serilog;
 using Lyzo.Module.Rooms.DI;
-using SignalRProjReference::Lyzo.Common.SignalR.DI;
+using SignalRHub = Lyzo.Common.SignalR.SignalRHub;
+using SignalRModule = Lyzo.Common.SignalR.DI.SignalRModule;
 
 namespace Lyzo
 {
@@ -49,7 +47,7 @@ namespace Lyzo
 
 			services.AddMassTransit(x =>
 			{
-				x.AddSignalRHub<SignalRProjReference::Lyzo.Common.SignalR.SignalRHub>();
+				x.AddSignalRHub<SignalRHub>();
 
 				x.UsingRabbitMq((ctx, cfg) =>
 				{
@@ -58,6 +56,8 @@ namespace Lyzo
 					cfg.PurgeOnStartup = true;
 
 					cfg.Host($"rabbitmq://{Configuration["Lyzo_RabbitMq"]}");
+
+					cfg.ConfigureEndpoints(ctx);
 				});
 			});
 
@@ -111,7 +111,7 @@ namespace Lyzo
 
 				endpoints.MapFallbackToController("Index", "Home");
 
-				endpoints.MapHub<SignalRProjReference::Lyzo.Common.SignalR.SignalRHub>("/signalRHub");
+				endpoints.MapHub<SignalRHub>("/signalRHub");
 			});
 		}
 	}

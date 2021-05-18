@@ -22,6 +22,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\Module\Lyzo.Module.Rooms\Lyzo.Module.Rooms.csproj" />
+	  <ProjectReference Include="..\..\Module\Lyzo.Module.Rooms.Abstractions\Lyzo.Module.Rooms.Abstractions.csproj" />
 	</ItemGroup>
 </Project>

@@ -4,8 +4,7 @@ using System.Threading.Tasks;
 using Lyzo.Common.SignalR.Base;
 using Lyzo.Common.SignalR.DataTypes;
 using Lyzo.Common.SignalR.Service.Interface;
-using Lyzo.Module.Rooms.DataTypes.Events;
-using Lyzo.Module.Rooms.Events.Interface;
+using Lyzo.Module.Rooms.Abstractions.Events;
 
 namespace Lyzo.Common.SignalR
 {

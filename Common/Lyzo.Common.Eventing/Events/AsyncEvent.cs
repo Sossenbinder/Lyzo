@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lyzo.Common.Core.Extensions.Async;
-using Lyzo.Common.Eventing.Events.Interface;
+using Lyzo.Common.Eventing.Abstractions.Events;
 
 namespace Lyzo.Common.Eventing.Events
 {

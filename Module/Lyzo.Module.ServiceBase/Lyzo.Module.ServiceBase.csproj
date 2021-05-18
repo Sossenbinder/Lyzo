@@ -6,6 +6,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\Common\Lyzo.Common.Core\Lyzo.Common.Core.csproj" />
+		<ProjectReference Include="..\..\Common\Lyzo.Common.Definitions\Lyzo.Common.Definitions.csproj" />
 		<ProjectReference Include="..\..\Common\Lyzo.Common.Eventing\Lyzo.Common.Eventing.csproj" />
 	</ItemGroup>
 </Project>

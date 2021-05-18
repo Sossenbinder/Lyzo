@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lyzo.Common.Core.Extensions.Async;
+using Lyzo.Common.SignalR.Service.Interface;
 using Lyzo.Common.Web.DataTypes.Responses;
 using Lyzo.Controllers.Base;
+using Lyzo.Models.UiModels;
 using Lyzo.Module.Rooms.DataTypes;
 using Lyzo.Module.Rooms.Service.Interface;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lyzo.Controllers
 {
-	extern alias SignalRProjReference;
-
 	public record GetConnectedClientsRequest(Guid RoomId);
 
 	[Route("[controller]")]
@@ -21,12 +22,12 @@ namespace Lyzo.Controllers
 
 		private readonly IRoomParticipantService _roomParticipantService;
 
-		private readonly SignalRProjReference::Lyzo.Common.SignalR.Service.Interface.IConnectionMappingService _connectionMappingService;
+		private readonly IConnectionMappingService _connectionMappingService;
 
 		public RoomController(
 			IRoomManagementService roomManagementService,
 			IRoomParticipantService roomParticipantService,
-			SignalRProjReference::Lyzo.Common.SignalR.Service.Interface.IConnectionMappingService connectionMappingService)
+			IConnectionMappingService connectionMappingService)
 		{
 			_roomManagementService = roomManagementService;
 			_roomParticipantService = roomParticipantService;
@@ -35,11 +36,26 @@ namespace Lyzo.Controllers
 
 		[HttpGet]
 		[Route("GetRooms")]
-		public async Task<JsonDataResponse<List<Room>>> GetRooms()
+		public async Task<JsonDataResponse<List<RoomUiModel>>> GetRooms()
 		{
 			var rooms = await _roomManagementService.GetRooms();
 
-			return JsonDataResponse<List<Room>>.Success(rooms);
+			var roomUiModels = rooms.Select(x => new RoomUiModel()
+			{
+				Participants = x.Participants,
+				Id = x.Id,
+				Description = x.Description,
+				Name = x.Name,
+				CreationDate = x.CreationDate,
+				MaxParticipants = x.MaxParticipants
+			}).ToList();
+
+			await roomUiModels.ParallelAsync(async x =>
+			{
+				x.ParticipantCount = (await _roomParticipantService.GetConnectedClients(x.Id)).Count;
+			});
+
+			return JsonDataResponse<List<RoomUiModel>>.Success(roomUiModels);
 		}
 
 		[HttpPost]

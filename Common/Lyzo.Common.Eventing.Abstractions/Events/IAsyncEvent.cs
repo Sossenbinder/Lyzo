@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Lyzo.Common.Eventing.Events.Interface
+namespace Lyzo.Common.Eventing.Abstractions.Events
 {
 	public interface IAsyncEvent
 	{

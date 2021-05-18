@@ -11,6 +11,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\Common\Lyzo.Common.Database\Lyzo.Common.Database.csproj" />
+		<ProjectReference Include="..\..\Common\Lyzo.Common.Eventing\Lyzo.Common.Eventing.csproj" />
 		<ProjectReference Include="..\Lyzo.Module.ServiceBase\Lyzo.Module.ServiceBase.csproj" />
 	</ItemGroup>
 </Project>

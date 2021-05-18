@@ -1,8 +1,7 @@
-﻿using Lyzo.Common.Eventing.Events;
-using Lyzo.Common.Eventing.Events.Interface;
+﻿using Lyzo.Common.Eventing.Abstractions.Events;
+using Lyzo.Common.Eventing.Events;
 using Lyzo.Common.Eventing.MassTransit.Service.Interface;
-using Lyzo.Module.Rooms.DataTypes.Events;
-using Lyzo.Module.Rooms.Events.Interface;
+using Lyzo.Module.Rooms.Abstractions.Events;
 using Microsoft.Extensions.Logging;
 
 namespace Lyzo.Module.Rooms.Events

@@ -2,12 +2,12 @@
 import * as signalR from "@microsoft/signalr";
 
 // Types
-import { NotificationType, Notification } from "./../types";
+import { Notification } from "./../types";
 
 export interface ISignalRConnectionProvider {
 	start(): Promise<void>;
 
-	registerNotificationHandler<T>(notificationType: NotificationType, handler: (notification: Notification<T>) => Promise<void>): void;
+	registerNotificationHandler<T>(notificationType: string, handler: (notification: Notification<T>) => Promise<void>): void;
 
 	readonly SignalRConnection: signalR.HubConnection;
 }

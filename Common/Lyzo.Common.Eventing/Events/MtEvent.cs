@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Lyzo.Common.Core.Disposable;
 using Lyzo.Common.Core.Extensions;
@@ -8,8 +7,8 @@ using Lyzo.Common.Core.Extensions.Async;
 using Lyzo.Common.Core.Utils.Collections;
 using Lyzo.Common.Core.Utils.Concurrency;
 using Lyzo.Common.Core.Utils.Tasks;
+using Lyzo.Common.Eventing.Abstractions.Events;
 using Lyzo.Common.Eventing.DataTypes;
-using Lyzo.Common.Eventing.Events.Interface;
 using Lyzo.Common.Eventing.MassTransit.Service.Interface;
 using MassTransit;
 using Microsoft.Extensions.Logging;

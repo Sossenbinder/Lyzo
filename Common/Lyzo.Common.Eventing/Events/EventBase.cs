@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Lyzo.Common.Core.Disposable;
 using Lyzo.Common.Core.Utils.Collections;
-using Lyzo.Common.Eventing.Events.Interface;
+using Lyzo.Common.Eventing.Abstractions.Events;
 
 namespace Lyzo.Common.Eventing.Events
 {

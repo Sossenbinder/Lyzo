@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Lyzo.Common.SignalR.Service.Interface;
-using Lyzo.Module.Rooms.DataTypes.Events;
-using Lyzo.Module.Rooms.Events.Interface;
+using Lyzo.Module.Rooms.Abstractions.Events;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 

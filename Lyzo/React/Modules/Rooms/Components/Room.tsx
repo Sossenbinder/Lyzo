@@ -40,7 +40,7 @@ export const Room: React.FC<Props> = ({ room, roomsService }) => {
 			</Flex>
 			<Flex
 				className="RoomMetaData">
-				{room.participants.length}
+				{`${room.participantCount}/${room.maxParticpants ?? "∞"}`}
 			</Flex>
 			<Button
 				className="JoinButton"

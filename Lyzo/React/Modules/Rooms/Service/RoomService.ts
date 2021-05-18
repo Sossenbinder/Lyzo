@@ -11,6 +11,7 @@ import { reducer as roomReducer } from "modules/Rooms/Reducer/RoomReducer";
 import ISignalRConnectionProvider from "common/Helper/SignalR/Interface/ISignalRConnectionProvider";
 import { ChatRoom, SignalR } from "modules/Rooms/types";
 import { IWebRTCService } from 'common/Modules/Service/types';
+import { Notification } from "common/Helper/SignalR/types";
 
 export default class RoomService extends ModuleService implements IRoomService {
 
@@ -28,7 +29,7 @@ export default class RoomService extends ModuleService implements IRoomService {
 		this._hubConnection = signalRConnectionProvider.SignalRConnection;
 		this._hubConnection.on(SignalR.Incoming.joinConfirmation, this.onJoinConfirmed);
 		this._hubConnection.on(SignalR.Incoming.newParticipant, this.onNewParticipant);
-		this._hubConnection.on(SignalR.Incoming.participantCountUpdated, this.onParticipantCountUpdated);
+		signalRConnectionProvider.registerNotificationHandler(SignalR.Incoming.participantUpdate, this.onParticipantUpdated);
 	}
 
 	public start() {
@@ -49,7 +50,9 @@ export default class RoomService extends ModuleService implements IRoomService {
 
 		if (getRoomsResponse.success) {
 			rooms = getRoomsResponse.payload;
-			rooms.forEach(room => room.participants = []);
+			rooms.forEach(room => {
+				room.participants = [];
+			});
 		}
 
 		this.dispatch(roomReducer.replace(getRoomsResponse.success ? getRoomsResponse.payload : []));
@@ -92,14 +95,18 @@ export default class RoomService extends ModuleService implements IRoomService {
 		}));
 	}
 
-	private onParticipantCountUpdated = (roomId: string, participantCount: number) => {
+	private onParticipantUpdated = (notification: Notification<SignalR.Payloads.ParticipantUpdate>): Promise<void> => {
+
+		const payload = notification.payload;
 
 		const state = this.getStore().roomReducer.data;
-		const room = state.find(x => x.id === roomId);
+		const room = state.find(x => x.id === payload.roomId);
 
 		this.dispatch(roomReducer.update({
 			...room,
-			participantCount,
+			participantCount: payload.count,
 		}));
+
+		return Promise.resolve();
 	}
 }
